@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="resource">
+      <UniqueIdentifier>{ca9c9e15-d942-43a1-aa7a-5f0b74ca1afd}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;jpg;jpeg;jpe;png;manifest</Extensions>
+    </Filter>
+    <Filter Include="win32">
+      <UniqueIdentifier>{ccb2323b-1cfa-41ea-bcf4-ba5f07309396}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes">
+      <UniqueIdentifier>{e93a77e1-af1e-4400-87d3-504b62ebdbb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\BDBaseClasses">
+      <UniqueIdentifier>{ae14131e-1efc-4d31-a3cf-7f3a1e90eb11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Defs">
+      <UniqueIdentifier>{93d835aa-b3cb-4acc-812d-10d3e111d7de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Layers">
+      <UniqueIdentifier>{3b37083b-bdff-4be9-9f9c-08ab7a683fec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Objects">
+      <UniqueIdentifier>{f354b0db-79d8-48e5-8800-0ede1f890c82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Scenes">
+      <UniqueIdentifier>{63ed8d62-f55c-4042-8179-1c8aad630ff2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Util">
+      <UniqueIdentifier>{15ce52d1-0a51-4e97-8112-89a6c9c42b6c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\AppDelegate.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\JSB_AUTO.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\JSBinding.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\CBabe.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\BabeJS.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\BDBaseClasses\BDObject.cpp">
+      <Filter>Classes\BDBaseClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Layers\BDGameLayer.cpp">
+      <Filter>Classes\Layers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Layers\BDSceneryLayer.cpp">
+      <Filter>Classes\Layers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Objects\BDCharacter.cpp">
+      <Filter>Classes\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Scenes\BDGameScene.cpp">
+      <Filter>Classes\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Util\CommonUtil.cpp">
+      <Filter>Classes\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Box2DTestBed\GLES-Render.cpp">
+      <Filter>Classes\Util</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\AppDelegate.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\JSB_AUTO.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\JSBinding.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\CBabe.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\BabeJS.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\BDBaseClasses\BDObject.h">
+      <Filter>Classes\BDBaseClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Defs\DBDef.h">
+      <Filter>Classes\Defs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Layers\BDGameLayer.h">
+      <Filter>Classes\Layers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Layers\BDSceneryLayer.h">
+      <Filter>Classes\Layers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Objects\BDCharacter.h">
+      <Filter>Classes\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Scenes\BDGameScene.h">
+      <Filter>Classes\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Util\CommonUtil.h">
+      <Filter>Classes\Util</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\game.ico">
+      <Filter>resource</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="game.rc">
+      <Filter>resource</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
