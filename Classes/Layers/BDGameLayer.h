@@ -10,6 +10,7 @@
 
 
 
+
 #define ENABLE_PHYSICS_BOX2D_DETECT 1//BabeDash utilizes box2d for physics
 #if ENABLE_PHYSICS_BOX2D_DETECT
 #include "Box2DTestBed/GLES-Render.h"
@@ -17,6 +18,8 @@
 #elif ENABLE_PHYSICS_CHIPMUNK_DETECT
 #include "chipmunk.h"
 #endif
+
+class BDGameScene;
 
 extern JSObject *jsb_CCLayer_prototype;//parent class
 extern JSClass  *jsb_BDGameLayer_class;
@@ -32,7 +35,10 @@ public:
 	std::string res;
 	std::string armature;
 	CCPoint pos;
+	CCPoint scale;
 	CCPoint speed;
+	int state;
+	int group;
 
 	void ApplyFromDefObj(JSContext* cx,JSObject* defObj);
 };
@@ -64,11 +70,17 @@ class BDGameLayer:public cocos2d::CCLayer,public BDObject
 {
 public:
 	BDGameLayer();
-	static BDGameLayer* create();
+	BDGameLayer(BDGameScene* pScene);
+	static BDGameLayer* CreateWithScene(BDGameScene* pScene);//notice this create function is native only,it's the following non-param func that is JS binded
+	static BDGameLayer* Create();
+	~BDGameLayer();
 	BDObject *AddGameObject(JSContext* cx,BDGameObjDef& def);
 	virtual void InitWorld();
+	int GetType();
 	virtual void update(float delta);
 	virtual void draw();
+	void SetMainCharacter(BDCharacter* pMainCharacter);
+	BDCharacter* GetMainCharacter();
 
 	void onFrameEvent(cocos2d::extension::CCBone *bone, const char *evt, int originFrameIndex, int currentFrameIndex);
 	cocos2d::extension::CCPhysicsSprite* bullet;
@@ -77,9 +89,11 @@ public:
 
 
 protected:
-	b2World *lpGameWorld;
-	ContactListener *lpContactListener;
-	GLESDebugDraw *lpDebugDraw;
+	b2World *m_lpGameWorld;
+	ContactListener *m_lpContactListener;
+	GLESDebugDraw *m_lpDebugDraw;
+	BDGameScene* m_lpGameScene; //pointer to the current game scene
+	BDCharacter* m_lpMainCharacter;
 };
 
 

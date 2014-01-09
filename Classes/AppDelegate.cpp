@@ -15,6 +15,7 @@
 #include "jsb_websocket.h"
 
 #include "Scenes/BDGameScene.h"
+#include "Layers/BDSceneryLayer.h"
 #include "Layers/BDGameLayer.h"
 #include "Objects/BDCharacter.h"
 
@@ -43,6 +44,7 @@ bool AppDelegate::applicationDidFinishLaunching()
     pDirector->setAnimationInterval(1.0 / 60);
 
 	CCEGLView::sharedOpenGLView()->setDesignResolutionSize(960, 480, kResolutionShowAll);
+	
     
     ScriptingCore* sc = ScriptingCore::getInstance();
     sc->addRegisterCallback(register_all_cocos2dx);
@@ -57,13 +59,14 @@ bool AppDelegate::applicationDidFinishLaunching()
     sc->addRegisterCallback(register_jsb_websocket);
 	sc->addRegisterCallback(register_all_bdgamescene);  
 	sc->addRegisterCallback(register_all_bdgamelayer);
-	sc->addRegisterCallback(register_all_bdcharacter);  
+	sc->addRegisterCallback(register_all_bdcharacter); 
+	sc->addRegisterCallback(register_all_bdscenerylayer);
 
     sc->start(); 
     CCScriptEngineProtocol *pEngine = ScriptingCore::getInstance();
     CCScriptEngineManager::sharedManager()->setScriptEngine(pEngine);
-	ScriptingCore::getInstance()->runScript("global/bdworld.js");
-    ScriptingCore::getInstance()->runScript("level1/scene_level1.js"); 
+	ScriptingCore::getInstance()->runScript("global/bdworld.js");//this script register the global js varibles
+    ScriptingCore::getInstance()->runScript("level1/scene_level1.js");  
        
     return true;     
 }

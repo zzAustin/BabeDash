@@ -35,3 +35,12 @@ int GetWCharArrLen(unsigned short* src)
 
 	return len;
 }
+
+float SpeedLogicToScreen(float logicX,float refX)
+{
+	float result;
+	
+	result = logicX - refX;
+
+	return result;
+}

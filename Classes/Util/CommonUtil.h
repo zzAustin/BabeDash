@@ -7,5 +7,6 @@ void WCharArrToString(unsigned short* src, std::string& str);
 
 int GetWCharArrLen(unsigned short* src);
 
+float SpeedLogicToScreen(float logicX,float refX);
 
 #endif

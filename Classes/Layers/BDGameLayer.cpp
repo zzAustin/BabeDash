@@ -2,6 +2,10 @@
 #include "Util/CommonUtil.h"
 #include "Defs/DBDef.h"
 #include "Objects/BDCharacter.h"
+
+
+#include "Actions/BDMoveAction.h"//testing...could be deleted
+
 USING_NS_CC;
 using namespace cocos2d::extension;
 
@@ -18,13 +22,16 @@ BDGameObjDef::BDGameObjDef()
 	pos.y = 0.0f;
 	speed.x = 0.0f;
 	speed.y = 0.0f;
+	group = -1;
+	state = -1;
 };
 
 void BDGameObjDef::ApplyFromDefObj(JSContext* cx,JSObject* defObj)
 {
 	jsval vp = JSVAL_VOID;
 	JSObject* posObj = NULL;
-	JSObject* speedObj = NULL; 
+	JSObject* speedObj = NULL;
+	JSObject* scaleObj = NULL;
 	float fRes[2];
 	size_t len;
 
@@ -131,13 +138,53 @@ void BDGameObjDef::ApplyFromDefObj(JSContext* cx,JSObject* defObj)
 		this->speed.x = fRes[0];
 		this->speed.y = fRes[1];
 	}
+
+	//get scale info
+	JS_GetProperty(cx,defObj,"scale",&vp);
+	if(!JSVAL_IS_VOID(vp))
+	{
+		scaleObj = JSVAL_TO_OBJECT(vp);
+		for(int i = 0;;i++)
+		{
+			JS_GetElement(cx,scaleObj,i,&vp);
+			if(!JSVAL_IS_VOID(vp))
+			{
+				if(JSVAL_IS_DOUBLE(vp))
+				{
+					fRes[i] = (float)(JSVAL_TO_DOUBLE(vp));
+				}
+				else
+				{
+					fRes[i] = (float)(JSVAL_TO_INT(vp));
+				}
+			}
+			else
+				break;
+		}
+		this->scale.x = fRes[0];
+		this->scale.y = fRes[1];
+	}
+
+	//get group
+	JS_GetProperty(cx,defObj,"group",&vp);
+	if(!JSVAL_IS_VOID(vp))
+	{
+		this->group = JSVAL_TO_INT(vp);
+	}
+
+	//get state
+	JS_GetProperty(cx,defObj,"state",&vp);
+	if(!JSVAL_IS_VOID(vp))
+	{
+		this->state = JSVAL_TO_INT(vp);
+	}
 }
 
 //box2d
 //----------------------------------------------------------------------------------------------
-void ContactListener::BeginContact(b2Contact *contact)
+void ContactListener::BeginContact(b2Contact *contact) 
 {
-	if (contact)
+	if (contact)  
 	{
 		Contact c;
 		c.fixtureA = contact->GetFixtureA();
@@ -167,10 +214,30 @@ void ContactListener::PostSolve(const b2Contact *contact, const b2ContactImpulse
 }
 
 //native class
+BDGameLayer::~BDGameLayer()
+{
+    m_pChildren->removeAllObjects();
+	CC_SAFE_DELETE(m_lpGameWorld);
+	CC_SAFE_DELETE(m_lpDebugDraw);
+}
+
+
 BDGameLayer::BDGameLayer()
 {
-	lpGameWorld = NULL;
-	lpDebugDraw = NULL;
+	m_lpGameWorld = NULL;
+	m_lpDebugDraw = NULL;
+	m_lpGameScene = NULL;
+	m_lpMainCharacter = NULL;
+
+	bullet = NULL;
+}
+
+BDGameLayer::BDGameLayer(BDGameScene* pScene)
+{
+	m_lpGameWorld = NULL;
+	m_lpDebugDraw = NULL;
+	m_lpMainCharacter = NULL;
+	m_lpGameScene = pScene;
 
 	bullet = NULL;
 }
@@ -192,14 +259,14 @@ void BDGameLayer::onFrameEvent(extension::CCBone *bone, const char *evt, int ori
     bullet->runAction(CCMoveBy::create(1.5f, ccp(350, 0)));
 }
 //--------------------------------------------------------------------------------------------
-BDGameLayer *BDGameLayer::create()
+BDGameLayer *BDGameLayer::CreateWithScene(BDGameScene* pScene)
 {
-	BDGameLayer* pRet = new BDGameLayer();
+	BDGameLayer* pRet = new BDGameLayer(pScene);
 
 	if (pRet && pRet->init())
 	{
 		pRet->autorelease();
-		pRet->scheduleUpdate();
+		//pRet->scheduleUpdate();
 		
 		return pRet;
 	}
@@ -210,6 +277,39 @@ BDGameLayer *BDGameLayer::create()
 	}
 }
 
+BDGameLayer *BDGameLayer::Create()
+{
+	BDGameLayer* pRet = new BDGameLayer();
+
+	if (pRet && pRet->init())
+	{
+		pRet->autorelease();
+		//pRet->scheduleUpdate();
+
+		return pRet;
+	}
+	else
+	{
+		CC_SAFE_DELETE(pRet);
+		return NULL;
+	}
+}
+
+int BDGameLayer::GetType()
+{
+	return GAME_LAYER;
+}
+
+void BDGameLayer::SetMainCharacter(BDCharacter* pMainCharacter)
+{
+	m_lpMainCharacter = pMainCharacter;
+}
+
+BDCharacter* BDGameLayer::GetMainCharacter()
+{
+	return m_lpMainCharacter;
+}
+
 BDObject* BDGameLayer::AddGameObject(JSContext* cx,BDGameObjDef& def)
 {
 	if(def.obj_type.length() == 0)
@@ -218,62 +318,77 @@ BDObject* BDGameLayer::AddGameObject(JSContext* cx,BDGameObjDef& def)
 		return NULL;
 	}
 
-	if(def.obj_type.find("Character")>=0)
+	if(def.obj_type.find("Character") != std::string::npos)
 	{
 		
 		BDCharacter* pCharacter = NULL;
-		pCharacter = BDCharacter::CreateCharacter(def.res.c_str(),def.armature.c_str());
+		pCharacter = BDCharacter::Create();
 		//pCharacter->scheduleUpdate();
 		CCAssert(pCharacter != NULL,"---BDGameLayer::AddGameObject--- newly created pCharacter is NULL!");
 	/*	JSObject* jsObj = JS_NewObject(cx,jsb_BDCharacter_class,jsb_BDCharacter_prototype,jsb_CCArmature_prototype);
 		CCAssert(jsObj!=NULL,"---BDGameLayer::AddGameObject jsObj is NULL");
 		pCharacter->SetJSObject(jsObj);*/
+		pCharacter->BuildArmature(def.res.c_str(),def.armature.c_str());
 		pCharacter->GetArmature()->setPosition(def.pos.x,def.pos.y);
-		pCharacter->GetArmature()->setScaleX(-0.2f);
-		pCharacter->GetArmature()->setScaleY(0.2f);
-		pCharacter->PlayAnimation("FireWithoutBullet");
-		pCharacter->SetGameWorld(lpGameWorld);
+		pCharacter->GetArmature()->setScaleX(def.scale.x);
+		pCharacter->GetArmature()->setScaleY(def.scale.y);
+		pCharacter->SetSpeed(def.speed);
+		pCharacter->SetCurState(def.state);
+
+		//BDAction test...to be deleted----------------------------
+		if(def.state == BDCharacter::STATE_IDLE)
+		{
+			BDAction* pMoveAction = new BDMoveAction(pCharacter);
+			//pCharacter->SetCurBDAction(pMoveAction);
+		}
+		//----------------------------------------------------------
+
+		//pCharacter->PlayAnimation("FireWithoutBullet");
+		pCharacter->SetGameWorld(m_lpGameWorld);
 		pCharacter->GrowBody();
+		pCharacter->SetGroup(def.group);
 
-
-		if(bullet == NULL)
+		if(def.group == GROUP_BABE)//set the main character pointer to GameLayer
 		{
-			bullet = extension::CCPhysicsSprite::createWithSpriteFrameName("25.png");
-			addChild(bullet);
-
-				;
-			// Define the dynamic body.
-			//Set up a 1m squared box in the physics world
-			b2BodyDef bodyDef;
-			bodyDef.type = b2_dynamicBody;
-
-			b2Body *body = lpGameWorld->CreateBody(&bodyDef);
-
-			// Define another box shape for our dynamic body.
-			b2PolygonShape dynamicBox;
-			dynamicBox.SetAsBox(.5f, .5f);//These are mid points for our 1m box
-
-			// Define the dynamic body fixture.
-			b2FixtureDef fixtureDef;
-			fixtureDef.shape = &dynamicBox;
-			fixtureDef.isSensor = true;
-			body->CreateFixture(&fixtureDef);
-
-
-			bullet->setB2Body(body);
-			bullet->setPTMRatio(PT_RATIO);
-			bullet->setPosition( ccp( -100, -100) );
-
-			mainCharacter = pCharacter;
-			mainCharacter->GetArmature()->getAnimation()->setFrameEventCallFunc(this,frameEvent_selector(BDGameLayer::onFrameEvent));
-		}
-		else
-		{
-			pCharacter->PlayAnimation("Walk");
-			enemy = pCharacter;
+			SetMainCharacter(pCharacter);
 		}
 
 
+		//if(bullet == NULL)
+		//{
+		//	bullet = extension::CCPhysicsSprite::createWithSpriteFrameName("25.png");
+		//	addChild(bullet);
+
+		//	// Define the dynamic body.
+		//	//Set up a 1m squared box in the physics world
+		//	b2BodyDef bodyDef;
+		//	bodyDef.type = b2_dynamicBody;
+
+		//	b2Body *body = m_lpGameWorld->CreateBody(&bodyDef);
+
+		//	// Define another box shape for our dynamic body.
+		//	b2PolygonShape dynamicBox;
+		//	dynamicBox.SetAsBox(.5f, .5f);//These are mid points for our 1m box
+
+		//	// Define the dynamic body fixture.
+		//	b2FixtureDef fixtureDef;
+		//	fixtureDef.shape = &dynamicBox;
+		//	fixtureDef.isSensor = true;
+		//	body->CreateFixture(&fixtureDef);
+
+
+		//	bullet->setB2Body(body);
+		//	bullet->setPTMRatio(PT_RATIO);
+		//	bullet->setPosition( ccp( -100, -100) );
+
+		//	mainCharacter = pCharacter;
+		//	mainCharacter->GetArmature()->getAnimation()->setFrameEventCallFunc(this,frameEvent_selector(BDGameLayer::onFrameEvent));
+		//}
+		//else
+		//{
+		//	pCharacter->PlayAnimation("Walk");
+		//	enemy = pCharacter;
+		//
 		return pCharacter;
 	}
 	
@@ -284,14 +399,14 @@ void BDGameLayer::InitWorld()
 {
 	b2Vec2 noGravity(0, 0);
 
-	lpGameWorld = new b2World(noGravity);
-	lpGameWorld->SetAllowSleeping(true);
+	m_lpGameWorld = new b2World(noGravity);
+	m_lpGameWorld->SetAllowSleeping(true);
 
-	lpContactListener = new ContactListener();
-	lpGameWorld->SetContactListener(lpContactListener);
+	m_lpContactListener = new ContactListener();
+	m_lpGameWorld->SetContactListener(m_lpContactListener);
 
-	lpDebugDraw = new GLESDebugDraw( PT_RATIO );
-	lpGameWorld->SetDebugDraw(lpDebugDraw);
+	m_lpDebugDraw = new GLESDebugDraw( PT_RATIO );
+	m_lpGameWorld->SetDebugDraw(m_lpDebugDraw);
 
 	uint32 flags = 0;
 	flags += b2Draw::e_shapeBit;
@@ -299,22 +414,21 @@ void BDGameLayer::InitWorld()
 	//        flags += b2Draw::e_aabbBit;
 	//        flags += b2Draw::e_pairBit;
 	//        flags += b2Draw::e_centerOfMassBit;
-	lpDebugDraw->SetFlags(flags);
-
-	
+	m_lpDebugDraw->SetFlags(flags);
 }
 
-void BDGameLayer::draw()
+void BDGameLayer::draw() 
 {
 	ccGLEnableVertexAttribs( kCCVertexAttribFlag_Position );
 	kmGLPushMatrix();
-	lpGameWorld->DrawDebugData();
+	m_lpGameWorld->DrawDebugData();  
 	kmGLPopMatrix();
 }
 
 void BDGameLayer::update(float delta)
 {
-	/*CCObject* child = NULL;
+	//Update the children
+	CCObject* child = NULL;
 	CCARRAY_FOREACH(m_pChildren, child)                                
 	{                                                             
 		CCNode* pNode = (CCNode*)child;                 
@@ -322,20 +436,22 @@ void BDGameLayer::update(float delta)
 		{                                                         
 			 pNode->update(delta);                                        
 		}                                                         
-	}    */ 
-	lpGameWorld->Step(delta, 0, 0);
+	}   
 
-	enemy->GetArmature()->setVisible(true);
-	for (std::list<Contact>::iterator it = lpContactListener->contact_list.begin(); it != lpContactListener->contact_list.end(); ++it)
+	//step the physics world
+	m_lpGameWorld->Step(delta, 0, 0);
+
+	/*enemy->GetArmature()->setVisible(true);
+	for (std::list<Contact>::iterator it = m_lpContactListener->contact_list.begin(); it != m_lpContactListener->contact_list.end(); ++it)
 	{
 		Contact &contact = *it;
 
 		CCBone *ba = (CCBone *)contact.fixtureA->GetUserData();
-		CCBone *bb = (CCBone *)contact.fixtureB->GetUserData();
+		CCBone *bb = (CCBone *)contact.fixtureB->GetUserData(); 
 
 		if( bb != NULL)
 			bb->getArmature()->setVisible(false);
-	}
+	}*/
 }
 
 //--------------------------------------------------------------------------------------------
@@ -343,7 +459,7 @@ void BDGameLayer::update(float delta)
 JSBool js_bdgamelayer_create(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	if (argc == 0) {
-		BDGameLayer* ret = BDGameLayer::create();  
+		BDGameLayer* ret = BDGameLayer::Create();  
 		jsval jsret;
 		do {
 			if (ret) {
@@ -455,14 +571,14 @@ JSBool js_bdgamelayer_addGameObject(JSContext *cx, uint32_t argc, jsval *vp)
 		} while (0);
 		JS_SET_RVAL(cx, vp, jsret);
 
-		CCAssert(newObj!=NULL,"---js_bdgamelayer_addGameObject newObj is NULL!");
+		CCAssert(newObj!=NULL,"---js_bdgamelayer_addGameObject newObj is NULL!");  
 		//jsObj = newObj->GetJSObject();
 		//*vp = (jsObj != NULL)?OBJECT_TO_JSVAL(jsObj):JSVAL_NULL;
 
-		return JS_TRUE;
+		return JS_TRUE;    
 	}
 	
-
+	  
 	JS_ReportError(cx, "wrong number of arguments");  
 	return JS_FALSE;
 }
@@ -491,7 +607,7 @@ void js_register_bdgamelayer(JSContext *cx, JSObject *global) {
 	};
 
 	static JSFunctionSpec st_funcs[] = {
-		JS_FN("create", js_bdgamelayer_create, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("Create", js_bdgamelayer_create, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FS_END
 	};
 

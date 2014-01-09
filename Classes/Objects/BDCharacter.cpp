@@ -1,4 +1,6 @@
 #include "Objects/BDCharacter.h"
+#include "CocoStudio/Armature/CCBone.h";
+#include "CocoStudio/Armature/physics/CCColliderDetector.h"
 USING_NS_CC;
 
 JSClass  *jsb_BDCharacter_class = NULL;
@@ -9,27 +11,45 @@ JSObject *jsb_BDCharacter_prototype = NULL;
 //-----------------------------------------------------------------------------------------------------------
 BDCharacter::BDCharacter()
 {
-	lpGameWorld = NULL;
+	m_iCurState = STATE_NULL;
+	m_iPrevState = STATE_NULL;
+	m_lpGameWorld = NULL;
+	m_lpCurAction = NULL;
+	m_iGroup = -1;
+	m_ptSpeed.x = 0.0f;
+	m_ptSpeed.y = 0.0f;
 }
 
-BDCharacter* BDCharacter::CreateCharacter(const char* srcFile,const char* armatureName)
+BDCharacter::~BDCharacter()
+{
+   m_lpGameWorld = NULL;
+   CC_SAFE_DELETE(m_lpCurAction);
+}
+
+
+BDCharacter* BDCharacter::Create()
 {
 	BDCharacter* pRet = NULL;
 	extension::CCArmature* pArmature = NULL;
 
 	pRet = new BDCharacter();
-	CCLog("about to add json file to armatureDataManager:%s ",srcFile);
-	extension::CCArmatureDataManager::sharedArmatureDataManager()->addArmatureFileInfo(srcFile);//add the armatrues in the data to cache
-	pArmature = extension::CCArmature::create(armatureName);//create armatrue from cache
-	pRet->lpArmature = pArmature;
-	pRet->scheduleUpdate();
+	if (pRet && pRet->init())
+	{
+		pRet->autorelease();
+		//pRet->scheduleUpdate();
+	}
+	else
+	{
+		CC_SAFE_DELETE(pRet);
+		return NULL;
+	}
+
 	return pRet;
 }
 
-
 void BDCharacter::SetGameWorld(b2World* world)
 {
-	lpGameWorld = world;
+	m_lpGameWorld = world;
 }
 
 void BDCharacter::GrowBody()
@@ -39,7 +59,7 @@ void BDCharacter::GrowBody()
 	b2BodyDef bodyDef;
 	bodyDef.type = b2_dynamicBody;
 
-	b2Body *body = lpGameWorld->CreateBody(&bodyDef);
+	b2Body *body = m_lpGameWorld->CreateBody(&bodyDef);
 
 	////// Define another box shape for our dynamic body.
 	////b2PolygonShape dynamicBox;
@@ -56,33 +76,151 @@ void BDCharacter::GrowBody()
 	////bullet->setPTMRatio(PT_RATIO);
 	////bullet->setPosition( ccp( -100, -100) );
 
-	body = lpGameWorld->CreateBody(&bodyDef);  
-	lpArmature->setBody(body);
+	body = m_lpGameWorld->CreateBody(&bodyDef);
+	m_lpArmature->setBody(body);
 }
 
 void BDCharacter::PlayAnimation(char* anim)
 {
-	lpArmature->getAnimation()->play(anim);
+	m_lpArmature->getAnimation()->play(anim); 
+}
+
+void BDCharacter::BuildArmature(const char* srcFile,const char* armatureName)
+{
+	CCLog("about to add json file to armatureDataManager:%s ",srcFile);
+	extension::CCArmatureDataManager::sharedArmatureDataManager()->addArmatureFileInfo(srcFile);//add the armatrues in the data to cache
+	m_lpArmature = extension::CCArmature::create(armatureName);//create armatrue from cache
 }
 
 extension::CCArmature* BDCharacter::GetArmature()
 {
-	return lpArmature;
+	return m_lpArmature;
 }
 
 void BDCharacter::SetArmature(extension::CCArmature* pArmature)
 {
-	lpArmature = pArmature;
+	m_lpArmature = pArmature;
+}
+
+void BDCharacter::SetGroup(int group)
+{
+	m_iGroup = group;
+
+	//Set filter for each of the character's bone
+	CCObject *boneElement = NULL;
+	CCObject *collBody = NULL;
+	CCArray *pBoneArray = NULL;  
+	CCArray *pColliderBodyArray = NULL;
+	pBoneArray = m_lpArmature->getChildren();
+	CCARRAY_FOREACH(pBoneArray, boneElement)
+	{
+		if (extension::CCBone *bone = dynamic_cast<extension::CCBone *>(boneElement))
+		{
+			CCArray *displayList = bone->getDisplayManager()->getDecorativeDisplayList();
+
+			CCObject *displayObject = NULL;
+			CCARRAY_FOREACH(displayList, displayObject)
+			{
+				extension::CCColliderDetector *detector = ((extension::CCDecorativeDisplay *)displayObject)->getColliderDetector();
+			
+				if (detector != NULL)
+				{
+					pColliderBodyArray = detector->getColliderBodyList();
+					CCARRAY_FOREACH(pColliderBodyArray, collBody)
+					{
+						extension::ColliderBody *colliderBody = (extension::ColliderBody *)collBody;
+
+						b2Fixture* fixture = colliderBody->getB2Fixture();
+						if (fixture == NULL)
+						{
+							return;
+						}
+
+						b2Filter filter;
+					
+						switch (m_iGroup)
+						{
+						case GROUP_BABE:
+							filter.categoryBits = BDObject::GROUP_CATEGORY_BABE;
+							filter.maskBits =  BDObject::GROUP_MASK_BABE;
+							fixture->SetFilterData(filter);
+							break;
+						case GROUP_ENEMY:
+							filter.categoryBits = BDObject::GROUP_CATEGORY_ENEMY;
+							filter.maskBits = BDObject::GROUP_MASK_ENEMY;
+							fixture->SetFilterData(filter);
+							break;
+						case GROUP_ITEM:
+							filter.categoryBits = BDObject::GROUP_CATEGORY_ITEM;
+							filter.maskBits = BDObject::GROUP_MASK_ITEM;
+							fixture->SetFilterData(filter);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+int BDCharacter::GetGroup()
+{
+	return m_iGroup;
+}
+
+void BDCharacter::StopCurBDAction()
+{
+	if(m_lpCurAction)
+		m_lpCurAction->Stop();
+	delete m_lpCurAction;
 }
 
 void BDCharacter::visit()
 {
-	lpArmature->visit();
+	m_lpArmature->visit();
 }
+
+int BDCharacter::GetCurState()
+{
+	return m_iCurState;
+}
+
+void BDCharacter::SetCurState(int state)
+{
+	if(state == m_iCurState)
+		return;
+
+	m_iCurState = state;
+
+	switch(m_iCurState)
+	{
+	case STATE_IDLE:
+		PlayAnimation("FireWithoutBullet");
+		break;
+	case STATE_WALKING:
+		PlayAnimation("Walk");
+		break;
+	}
+	
+}
+
+int BDCharacter::GetPrevState()
+{
+	return m_iPrevState;
+}
+
+void BDCharacter::SetPrevState(int state)
+{
+	m_iPrevState = state;
+}
+
 
 void BDCharacter::update(float dt)
 {
-	lpArmature->update(dt);
+	m_lpArmature->update(dt);
+
+	if(m_lpCurAction)
+		m_lpCurAction->Update(dt);
 }
 
 //JSBinding

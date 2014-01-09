@@ -1,6 +1,7 @@
 #include "cocos2d.h"
 #include "cocos2d_specifics.hpp"
 #include "Scenes/BDGameScene.h"
+#include "Layers/BDSceneryLayer.h"
 #include "Layers/BDGameLayer.h"
 #include "Util/CommonUtil.h"
 USING_NS_CC;
@@ -100,8 +101,19 @@ void BDSceneUnitDef::ApplyFromDefObj(JSContext* cx,JSObject* defObj)
 	}
 }
 
+
 //native class
-BDGameScene *BDGameScene::create()
+BDGameScene::BDGameScene()
+{
+	lpGameLayer = NULL;
+}
+
+BDGameScene::~BDGameScene()
+{
+	m_pChildren->removeAllObjects();
+}
+
+BDGameScene *BDGameScene::Create()
 {
 	BDGameScene* pRet = new BDGameScene();
 
@@ -118,7 +130,36 @@ BDGameScene *BDGameScene::create()
 	}
 }
 
-BDObject* BDGameScene::AddSceneUnit(JSContext* cx,BDSceneUnitDef& def)
+BDGameLayer* BDGameScene::GetGameLayer()
+{
+	return lpGameLayer;
+}
+
+void BDGameScene::SetGameLayer(BDGameLayer* pGameLayer)
+{
+	lpGameLayer = pGameLayer;
+}
+
+void BDGameScene::update(float delta)
+{
+	CCScene::update(delta);
+	
+	if ( m_pChildren && m_pChildren->count() > 0 )
+	{
+		CCObject* child;
+		CCARRAY_FOREACH(m_pChildren, child)
+		{
+			CCNode* pNode = (CCNode*) child;
+			if (pNode)
+			{
+				pNode->update(delta);
+			}
+		}
+	}
+}
+
+
+BDObject* BDGameScene::AddSceneUnit(JSContext* cx,BDSceneUnitDef& def)//this function will be deleted later
 {
 	if(def.obj_type.length() == 0)
 	{
@@ -128,12 +169,31 @@ BDObject* BDGameScene::AddSceneUnit(JSContext* cx,BDSceneUnitDef& def)
 
 	if(def.obj_type.find("GameLayer")>=0)
 	{
-		BDGameLayer* pLayer = BDGameLayer::create();
+		BDGameLayer* pLayer = BDGameLayer::CreateWithScene(this);
 		//JSObject* jsObj = JS_NewObject(cx,jsb_BDGameLayer_class,jsb_BDGameLayer_prototype,jsb_CCLayer_prototype);
 		//CCAssert(jsObj!=NULL,"---BDGameScene::AddSceneUnit jsObj is NULL");
 		//pLayer->SetJSObject(jsObj);
 		
 		pLayer->InitWorld();
+		return pLayer;
+	}
+
+	return NULL;
+}
+
+BDObject* BDGameScene::AddSceneUnit(std::string& unit_type)
+{
+	if(unit_type.find("GameLayer")!= std::string::npos)
+	{
+		BDGameLayer* pLayer = BDGameLayer::CreateWithScene(this);
+		pLayer->InitWorld();
+		SetGameLayer(pLayer);
+		return pLayer;
+	}
+
+	if(unit_type.find("SceneryLayer")!= std::string::npos)
+	{
+		BDSceneryLayer* pLayer = BDSceneryLayer::CreateWithScene(this);
 		return pLayer;
 	}
 
@@ -152,7 +212,7 @@ void BDGameScene::SayHello()
 JSBool js_bdgamescene_create(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	if (argc == 0) {
-		BDGameScene* ret = BDGameScene::create();
+		BDGameScene* ret = BDGameScene::Create();
 		jsval jsret;
 		do {
 			if (ret) {
@@ -214,6 +274,9 @@ JSBool js_bdgamescene_sayHello(JSContext *cx, uint32_t argc, jsval *vp)
 
 JSBool js_bdgamescene_addSceneUnit(JSContext *cx, uint32_t argc, jsval *vp)
 {
+	const jschar* p;
+	std::string unit_type;
+	size_t len;
 	jsval *argv = JS_ARGV(cx, vp);
 	JSBool ok = JS_TRUE;
 
@@ -246,36 +309,49 @@ JSBool js_bdgamescene_addSceneUnit(JSContext *cx, uint32_t argc, jsval *vp)
 
 	if(argc == 1) 
 	{
-		
-		BDSceneUnitDef def;
+		JSString* jsstr;
+		BDObject* newUnit = NULL;
+		JSObject* jsObj = NULL;
+
+		if(JSVAL_IS_STRING(argv[0]))
+		{
+			jsstr=JSVAL_TO_STRING(argv[0]);
+		}
+		else
+		{
+			jsstr=JS_ValueToString(cx,argv[0]);
+		}
+		p = JS_GetStringCharsAndLength(cx,jsstr,&len);
+		WCharArrToString((unsigned short*)p,unit_type);
+		newUnit = cobj->AddSceneUnit(unit_type);
+
+		/*BDSceneUnitDef def;
 		JSObject* defObj = JSVAL_TO_OBJECT(argv[0]);
 		BDObject* newObj = NULL;
 		JSObject* jsObj = NULL;
-		
-		def.ApplyFromDefObj(cx,defObj); 
-		newObj = cobj->AddSceneUnit(cx,def);
 
-		jsval jsret;
+		def.ApplyFromDefObj(cx,defObj);
+		newUnit = cobj->AddSceneUnit(cx,def);*/
+		CCAssert(newUnit!=NULL,"---js_bdgamescene_addSceneUnit newUnit is NULL!");
+
+		jsval jsret = JSVAL_NULL;
 		do {
-			if (newObj) {
-				js_proxy_t *proxy = js_get_or_create_proxy<BDGameLayer>(cx, (BDGameLayer*)newObj);
+			if (newUnit->GetType() == GAME_LAYER) {
+				js_proxy_t *proxy = js_get_or_create_proxy<BDGameLayer>(cx, (BDGameLayer*)newUnit);
 				jsret = OBJECT_TO_JSVAL(proxy->obj);
-				newObj->SetJSObject(proxy->obj);
-			} else {
-				jsret = JSVAL_NULL;
+				newUnit->SetJSObject(proxy->obj);
+			}
+			if (newUnit->GetType() == SCENERY_LAYER) {
+				js_proxy_t *proxy = js_get_or_create_proxy<BDSceneryLayer>(cx, (BDSceneryLayer*)newUnit);
+				jsret = OBJECT_TO_JSVAL(proxy->obj);
+				newUnit->SetJSObject(proxy->obj);
 			}
 		} while (0);
+
 		JS_SET_RVAL(cx, vp, jsret);
-
-
-		CCAssert(newObj!=NULL,"---js_bdgamescene_addSceneUnit newObj is NULL!");
-		//jsObj = newObj->GetJSObject();
-		//*vp = (jsObj != NULL)?OBJECT_TO_JSVAL(jsObj):JSVAL_NULL;
-
 		return JS_TRUE;
 	}
 	
-
 	JS_ReportError(cx, "wrong number of arguments");
 	return JS_FALSE;
 }

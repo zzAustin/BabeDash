@@ -18,8 +18,6 @@ public:
 	CCPoint pos;
 	CCPoint speed;
 	void ApplyFromDefObj(JSContext* cx,JSObject* defObj);
-
-	
 };
 
 
@@ -27,9 +25,17 @@ public:
 class BDGameScene:public cocos2d::CCScene,public BDObject
 {
 public:
-	static BDGameScene* create();
+	static BDGameScene* Create();
+	BDGameScene();
+	~BDGameScene();
+	void update(float delta);
 	BDObject* AddSceneUnit(JSContext* cx,BDSceneUnitDef& def);
+	BDObject* AddSceneUnit(std::string& unit_type);
+	BDGameLayer* GetGameLayer();
+	void SetGameLayer(BDGameLayer* pGameLayer);
 	void SayHello();
+protected:
+	BDGameLayer* lpGameLayer;//pointer to the game layer of the scene
 };
 
 

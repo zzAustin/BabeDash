@@ -29,6 +29,12 @@
     <Filter Include="Classes\Util">
       <UniqueIdentifier>{15ce52d1-0a51-4e97-8112-89a6c9c42b6c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Actions">
+      <UniqueIdentifier>{c71136fd-46c5-400a-84ee-1b8e7e0f6851}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Components">
+      <UniqueIdentifier>{8e66409b-a058-4076-aff3-ab62b2ab1e23}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -69,6 +75,15 @@
     </ClCompile>
     <ClCompile Include="..\Classes\Box2DTestBed\GLES-Render.cpp">
       <Filter>Classes\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Actions\BDAction.cpp">
+      <Filter>Classes\Actions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Components\BDMovementComp.cpp">
+      <Filter>Classes\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Actions\BDMoveAction.cpp">
+      <Filter>Classes\Actions</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -113,6 +128,15 @@
     </ClInclude>
     <ClInclude Include="..\Classes\Util\CommonUtil.h">
       <Filter>Classes\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Actions\BDAction.h">
+      <Filter>Classes\Actions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Components\BDMovementComp.h">
+      <Filter>Classes\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Actions\BDMoveAction.h">
+      <Filter>Classes\Actions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
