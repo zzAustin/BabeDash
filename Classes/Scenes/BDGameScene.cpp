@@ -173,7 +173,7 @@ BDObject* BDGameScene::AddSceneUnit(JSContext* cx,BDSceneUnitDef& def)//this fun
 		//JSObject* jsObj = JS_NewObject(cx,jsb_BDGameLayer_class,jsb_BDGameLayer_prototype,jsb_CCLayer_prototype);
 		//CCAssert(jsObj!=NULL,"---BDGameScene::AddSceneUnit jsObj is NULL");
 		//pLayer->SetJSObject(jsObj);
-		
+		pLayer->setTouchEnabled(true);
 		pLayer->InitWorld();
 		return pLayer;
 	}
@@ -187,6 +187,7 @@ BDObject* BDGameScene::AddSceneUnit(std::string& unit_type)
 	{
 		BDGameLayer* pLayer = BDGameLayer::CreateWithScene(this);
 		pLayer->InitWorld();
+		pLayer->setTouchEnabled(true);
 		SetGameLayer(pLayer);
 		return pLayer;
 	}

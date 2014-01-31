@@ -18,6 +18,7 @@
 #include "Layers/BDSceneryLayer.h"
 #include "Layers/BDGameLayer.h"
 #include "Objects/BDCharacter.h"
+#include "GameManagers/BDResourceManager.h"
 
 USING_NS_CC;
 using namespace CocosDenshion;
@@ -43,7 +44,8 @@ bool AppDelegate::applicationDidFinishLaunching()
     // set FPS. the default value is 1.0/60 if you don't call this
     pDirector->setAnimationInterval(1.0 / 60);
 
-	CCEGLView::sharedOpenGLView()->setDesignResolutionSize(960, 480, kResolutionShowAll);
+	CCEGLView::sharedOpenGLView()->setDesignResolutionSize(960, 640, kResolutionShowAll);  
+	//pDirector->setContentScaleFactor(min(1.0/CCEGLView::sharedOpenGLView()->getScaleX(),1.0/CCEGLView::sharedOpenGLView()->getScaleY()));
 	
     
     ScriptingCore* sc = ScriptingCore::getInstance();
@@ -65,8 +67,10 @@ bool AppDelegate::applicationDidFinishLaunching()
     sc->start(); 
     CCScriptEngineProtocol *pEngine = ScriptingCore::getInstance();
     CCScriptEngineManager::sharedManager()->setScriptEngine(pEngine);
+
+	BDResourceManager::GetInstance()->Initialize();
 	ScriptingCore::getInstance()->runScript("global/bdworld.js");//this script register the global js varibles
-    ScriptingCore::getInstance()->runScript("level1/scene_level1.js");  
+    ScriptingCore::getInstance()->runScript("level1/scene_level1.js");     
        
     return true;     
 }

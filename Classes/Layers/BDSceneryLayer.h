@@ -46,6 +46,7 @@ public:
 protected:
 	cocos2d::CCSprite* m_lpSprite1;
 	cocos2d::CCSprite* m_lpSprite2;
+	cocos2d::CCPoint m_ptSpeed;
 	BDGameScene* m_lpGameScene;//pointer to the game scene of current level           
 };
 

@@ -27,7 +27,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     CCEGLView* eglView = CCEGLView::sharedOpenGLView();
     eglView->setViewName("BabeDash");
     //eglView->setFrameSize(480, 320);
-	eglView->setFrameSize(1024, 768);
+	eglView->setFrameSize(960,640);
 
     int ret = CCApplication::sharedApplication()->run();
 

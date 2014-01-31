@@ -180,16 +180,16 @@ int BDSceneryLayer::GetType()
 	return SCENERY_LAYER;
 }
 
-bool BDSceneryLayer::InitWithAttributes(BDSceneryLayerDef& def)
+bool BDSceneryLayer::InitWithAttributes(BDSceneryLayerDef& def) 
 {
-	CCSize size;
+	CCSize size;  
 	m_lpSprite1 = CCSprite::create(def.m_strSpriteRes1.c_str());
-	m_lpSprite2 = CCSprite::create(def.m_strSpriteRes2.c_str());
-	m_ptSpeed = def.m_ptSpeed;
-	m_lpSprite1->setPosition(def.m_ptPos);
-	size = m_lpSprite1->getContentSize();
-	m_lpSprite2->setPositionX(size.width);
-	m_lpSprite2->setPositionY(def.m_ptPos.y);
+	m_lpSprite2 = CCSprite::create(def.m_strSpriteRes2.c_str());  
+	m_ptSpeed = def.m_ptSpeed; 
+	m_lpSprite1->setPosition(def.m_ptPos);   
+	size = m_lpSprite1->getContentSize();  
+	m_lpSprite2->setPositionX(size.width);   
+	m_lpSprite2->setPositionY(def.m_ptPos.y);   
 
 	this->addChild(m_lpSprite1);
 	this->addChild(m_lpSprite2);
@@ -215,6 +215,7 @@ void BDSceneryLayer::update(float delta)
 	float x1 = m_lpSprite1->getPositionX();
 	float x2 = m_lpSprite2->getPositionX();
 
+	//the left one is defined 'front'
 	if(x1<x2)
 	{
 		front = m_lpSprite1;
@@ -228,12 +229,24 @@ void BDSceneryLayer::update(float delta)
 	//Get the viewport after the resolution adaptation
 	CCRect rect = CCEGLView::sharedOpenGLView()->getViewPortRect();
 	
-	if(behind->getPositionX()<= (0-(behind->getContentSize().width - rect.size.width)))
+	gameLayer = m_lpGameScene->GetGameLayer();
+	if(gameLayer->GetMainCharacter() != NULL && gameLayer->GetMainCharacter()->GetSpeed().x > 0)//main character is moving forward logically
 	{
-		front->setPositionX(behind->getPositionX()+behind->getContentSize().width);
+		if(behind->getPositionX()<= (0-(behind->getContentSize().width - rect.size.width)))
+		{
+			front->setPositionX(behind->getPositionX()+behind->getContentSize().width);
+		}
+	}
+	
+	if(gameLayer->GetMainCharacter() != NULL && gameLayer->GetMainCharacter()->GetSpeed().x < 0)//main character is moving backwards logically
+	{
+		if(front->getPositionX() >= 0)
+		{
+			behind->setPositionX(0-behind->getContentSize().width);
+		}
 	}
 
-	gameLayer = m_lpGameScene->GetGameLayer();
+	
 	refSpeedX = gameLayer->GetMainCharacter()->GetSpeed().x;
 	
 	screenSpeedX = SpeedLogicToScreen(m_ptSpeed.x,refSpeedX);

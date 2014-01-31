@@ -13,9 +13,38 @@ public:
 	void onEnter();
 	void onExit();
     void update(float delta);
+	cocos2d::CCPoint& GetCurSpeed();
+	cocos2d::CCPoint& GetOrigSpeed();
+	cocos2d::CCPoint& GetCurAcc();
+
+	float GetCurSpeedX();
+	float GetCurSpeedY();
+	float GetOrigSpeedX();
+	float GetOrigSpeedY();
+	float GetCurAccX();
+	float GetCurAccY();
+
+	void SetCurSpeed(const cocos2d::CCPoint& ptSpeed);
+	void SetCurAcc(const cocos2d::CCPoint& ptAcc);
+
+	void SetCurSpeedX(float fX);
+	void SetCurSpeedY(float fY);
+	void SetCurAccX(float fX);
+	void SetCurAccY(float fY);
+
+    
+    void CmdRight();
+    void CmdLeft();
+    void CmdUp();
+    void CmdDown();
+    void StopHori();
+    void StopVert();
 
 private:
-	cocos2d::CCPoint m_ptSpeed;
+	cocos2d::CCPoint m_ptCurSpeed;
+	cocos2d::CCPoint m_ptOrigSpeed;
+    cocos2d::CCPoint m_ptOrigAcc;
+    cocos2d::CCPoint m_ptCurAcc;
 };
 
 #endif

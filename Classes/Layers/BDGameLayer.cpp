@@ -3,8 +3,10 @@
 #include "Defs/DBDef.h"
 #include "Objects/BDCharacter.h"
 
+#include "Actions/BDJumpAction.h"//testing...could be deleted
+#include "Layers/BDGameLayer.h"
+#include "Particles/BDParticleSystem.h"
 
-#include "Actions/BDMoveAction.h"//testing...could be deleted
 
 USING_NS_CC;
 using namespace cocos2d::extension;
@@ -24,7 +26,13 @@ BDGameObjDef::BDGameObjDef()
 	speed.y = 0.0f;
 	group = -1;
 	state = -1;
+	lpMovementAttr = NULL;
 };
+
+BDGameObjDef::~BDGameObjDef()
+{
+	CC_SAFE_DELETE(lpMovementAttr);
+}
 
 void BDGameObjDef::ApplyFromDefObj(JSContext* cx,JSObject* defObj)
 {
@@ -178,6 +186,45 @@ void BDGameObjDef::ApplyFromDefObj(JSContext* cx,JSObject* defObj)
 	{
 		this->state = JSVAL_TO_INT(vp);
 	}
+
+	JS_GetProperty(cx,defObj,"movement_component",&vp);
+	{
+		jsval v = JSVAL_NULL;
+		JSObject* moveCompObj = NULL;
+		JSObject* speedObj = NULL;
+
+		if(!JSVAL_IS_VOID(vp))
+		{
+			moveCompObj = JSVAL_TO_OBJECT(vp);
+			lpMovementAttr = new BDMovementAttr();
+			JS_GetProperty(cx,moveCompObj,"speed",&v);
+			if(!JSVAL_IS_VOID(v))
+			{
+				speedObj = JSVAL_TO_OBJECT(v);
+				for(int i = 0;;i++)
+				{
+					JS_GetElement(cx,speedObj,i,&v);
+					if(!JSVAL_IS_VOID(v))
+					{
+						if(JSVAL_IS_DOUBLE(v))
+						{
+							fRes[i] = (float)(JSVAL_TO_DOUBLE(v));
+						}
+						else
+						{
+							fRes[i] = (float)(JSVAL_TO_INT(v));
+						}
+					}
+					else
+						break;
+				}
+			}
+			lpMovementAttr->ptSpeed.x = fRes[0];
+			lpMovementAttr->ptSpeed.y = fRes[1];
+		}
+
+		
+	}
 }
 
 //box2d
@@ -187,7 +234,7 @@ void ContactListener::BeginContact(b2Contact *contact)
 	if (contact)  
 	{
 		Contact c;
-		c.fixtureA = contact->GetFixtureA();
+		c.fixtureA = contact->GetFixtureA(); 
 		c.fixtureB = contact->GetFixtureB();
 
 		contact_list.push_back(c);
@@ -258,6 +305,8 @@ void BDGameLayer::onFrameEvent(extension::CCBone *bone, const char *evt, int ori
     bullet->stopAllActions();
     bullet->runAction(CCMoveBy::create(1.5f, ccp(350, 0)));
 }
+
+
 //--------------------------------------------------------------------------------------------
 BDGameLayer *BDGameLayer::CreateWithScene(BDGameScene* pScene)
 {
@@ -295,7 +344,38 @@ BDGameLayer *BDGameLayer::Create()
 	}
 }
 
-int BDGameLayer::GetType()
+void BDGameLayer::HandleCollision(BDObject* objA,BDObject* objB)
+{
+	jschar sSkillName[128];
+	jsval jv=JSVAL_VOID;
+	jsval retval = JSVAL_NULL;
+	jsval v[2];
+
+	jv = OBJECT_TO_JSVAL(objA->GetJSObject());
+	v[0] = jv;
+	jv = OBJECT_TO_JSVAL(objB->GetJSObject());
+	v[1] = jv;
+
+	ScriptingCore::getInstance()->executeFunctionWithOwner(OBJECT_TO_JSVAL(ScriptingCore::getInstance()->getGlobalObject()),
+		"handleCollision", 2, v, &retval);
+	//res = JSVAL_TO_BOOLEAN(retval); 
+}
+
+void BDGameLayer::ccTouchesEnded(cocos2d::CCSet* touches, cocos2d::CCEvent* event)
+{
+	BDCharacter* pMainCharacter = GetMainCharacter();
+	if(pMainCharacter == NULL)
+		return; 
+
+	/*BDAction* pJumpAction = new BDJumpAction(pMainCharacter,-0.1f);
+	CCPoint sp = pMainCharacter->GetMovementComp()->GetCurSpeed();
+	if(pMainCharacter->GetCurBDAction() == NULL)
+		pMainCharacter->GetMovementComp()->SetCurSpeed(pMainCharacter->GetMovementComp()->GetOrigSpeed()); 
+	pMainCharacter->SetCurBDAction(pJumpAction);*/
+	pMainCharacter->PlaySkill(BDSKILL_JUMP);
+}
+
+int BDGameLayer::GetType() 
 {
 	return GAME_LAYER;
 }
@@ -322,23 +402,26 @@ BDObject* BDGameLayer::AddGameObject(JSContext* cx,BDGameObjDef& def)
 	{
 		
 		BDCharacter* pCharacter = NULL;
-		pCharacter = BDCharacter::Create();
-		//pCharacter->scheduleUpdate();
+		pCharacter = BDCharacter::CreateWithGameLayer(this);
 		CCAssert(pCharacter != NULL,"---BDGameLayer::AddGameObject--- newly created pCharacter is NULL!");
 	/*	JSObject* jsObj = JS_NewObject(cx,jsb_BDCharacter_class,jsb_BDCharacter_prototype,jsb_CCArmature_prototype);
 		CCAssert(jsObj!=NULL,"---BDGameLayer::AddGameObject jsObj is NULL");
 		pCharacter->SetJSObject(jsObj);*/
 		pCharacter->BuildArmature(def.res.c_str(),def.armature.c_str());
-		pCharacter->GetArmature()->setPosition(def.pos.x,def.pos.y);
+
+		//We have to set pCharacter and its armature the same position here
+		pCharacter->SetPosition(def.pos.x,def.pos.y,true);
+		//also record the logic position of the character
+		pCharacter->SetLogicPosition(def.pos.x,def.pos.y);
+
 		pCharacter->GetArmature()->setScaleX(def.scale.x);
 		pCharacter->GetArmature()->setScaleY(def.scale.y);
-		pCharacter->SetSpeed(def.speed);
 		pCharacter->SetCurState(def.state);
 
 		//BDAction test...to be deleted----------------------------
 		if(def.state == BDCharacter::STATE_IDLE)
 		{
-			BDAction* pMoveAction = new BDMoveAction(pCharacter);
+			//BDAction* pMoveAction = new BDMoveAction(pCharacter);
 			//pCharacter->SetCurBDAction(pMoveAction);
 		}
 		//----------------------------------------------------------
@@ -351,8 +434,29 @@ BDObject* BDGameLayer::AddGameObject(JSContext* cx,BDGameObjDef& def)
 		if(def.group == GROUP_BABE)//set the main character pointer to GameLayer
 		{
 			SetMainCharacter(pCharacter);
-		}
+	        pCharacter->SetIsMainCharacter(true);
 
+			/*BDParticleSystem* m_emitter = BDParticleSystem::create("lavaflow.plist",true);
+			m_emitter->retain();
+			pCharacter->addChild(m_emitter, 10);
+			m_emitter->setTexture( CCTextureCache::sharedTextureCache()->addImage("fire.png") );
+			m_emitter->setPosition(-50.0f,0.0f);*/
+
+		}
+		else
+		{
+			/*BDParticleSystem* m_emitter = BDParticleSystem::createWithTotalParticles(600,false);
+			m_emitter->retain();
+			pCharacter->addChild(m_emitter, 10);
+			m_emitter->setTexture( CCTextureCache::sharedTextureCache()->addImage("fire.png") );
+			m_emitter->setPosition(50.0f,0.0f);*/
+		}
+		if(def.lpMovementAttr != NULL) 
+		{
+			pCharacter->SetMovementComp(new BDMovementComp(def.lpMovementAttr->ptSpeed));
+			pCharacter->addComponent(pCharacter->GetMovementComp());
+			pCharacter->GetMovementComp()->setEnabled(true);
+		} 
 
 		//if(bullet == NULL)
 		//{
@@ -427,6 +531,8 @@ void BDGameLayer::draw()
 
 void BDGameLayer::update(float delta)
 {
+	CCLayer::update(delta);
+
 	//Update the children
 	CCObject* child = NULL;
 	CCARRAY_FOREACH(m_pChildren, child)                                
@@ -441,17 +547,34 @@ void BDGameLayer::update(float delta)
 	//step the physics world
 	m_lpGameWorld->Step(delta, 0, 0);
 
-	/*enemy->GetArmature()->setVisible(true);
+	//enemy->GetArmature()->setVisible(true);
 	for (std::list<Contact>::iterator it = m_lpContactListener->contact_list.begin(); it != m_lpContactListener->contact_list.end(); ++it)
 	{
 		Contact &contact = *it;
 
 		CCBone *ba = (CCBone *)contact.fixtureA->GetUserData();
-		CCBone *bb = (CCBone *)contact.fixtureB->GetUserData(); 
+		CCBone *bb = (CCBone *)contact.fixtureB->GetUserData();
+		 
+		extension::CCArmature* aa = NULL;
+		extension::CCArmature* ab = NULL;
+		BDArmature* ba_a = NULL;
+		BDArmature* ba_b = NULL;
+		BDObject* owner_a = NULL;
+		BDObject* owner_b = NULL;
 
-		if( bb != NULL)
-			bb->getArmature()->setVisible(false);
-	}*/
+		aa = ba->getArmature();
+		ba_a = dynamic_cast<BDArmature*>(aa);
+		owner_a = ba_a->GetOwner();
+
+		ab = bb->getArmature();
+		ba_b = dynamic_cast<BDArmature*>(ab);
+		owner_b = ba_b->GetOwner();
+
+		HandleCollision(owner_a,owner_b);
+	
+	/*	if( bb != NULL)
+			bb->getArmature()->setVisible(false);*/
+	}
 }
 
 //--------------------------------------------------------------------------------------------
@@ -547,10 +670,8 @@ JSBool js_bdgamelayer_addGameObject(JSContext *cx, uint32_t argc, jsval *vp)
 	}
 	} while(0);*/
 
-
 	if(argc == 1) 
 	{
-		
 		BDGameObjDef def;
 		JSObject* defObj = JSVAL_TO_OBJECT(argv[0]); 
 		BDObject* newObj = NULL;
@@ -578,7 +699,6 @@ JSBool js_bdgamelayer_addGameObject(JSContext *cx, uint32_t argc, jsval *vp)
 		return JS_TRUE;    
 	}
 	
-	  
 	JS_ReportError(cx, "wrong number of arguments");  
 	return JS_FALSE;
 }

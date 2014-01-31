@@ -35,6 +35,12 @@
     <Filter Include="Classes\Components">
       <UniqueIdentifier>{8e66409b-a058-4076-aff3-ab62b2ab1e23}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Particles">
+      <UniqueIdentifier>{32d723df-5c95-4567-8ab3-cbe8f399d677}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\GameManagers">
+      <UniqueIdentifier>{92747b37-93df-489c-a70c-5f84504dbd23}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -84,6 +90,18 @@
     </ClCompile>
     <ClCompile Include="..\Classes\Actions\BDMoveAction.cpp">
       <Filter>Classes\Actions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Actions\BDJumpAction.cpp">
+      <Filter>Classes\Actions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\GameManagers\BDResourceManager.cpp">
+      <Filter>Classes\GameManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Util\base64.cpp">
+      <Filter>Classes\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Particles\BDParticleSystem.cpp">
+      <Filter>Classes\Particles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -137,6 +155,15 @@
     </ClInclude>
     <ClInclude Include="..\Classes\Actions\BDMoveAction.h">
       <Filter>Classes\Actions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Actions\BDJumpAction.h">
+      <Filter>Classes\Actions</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\GameManagers\BDResourceManager.h">
+      <Filter>Classes\GameManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Particles\BDParticleSystem.h">
+      <Filter>Classes\Particles</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

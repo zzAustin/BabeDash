@@ -15,17 +15,17 @@ BDMoveAction::~BDMoveAction()
 
 void BDMoveAction::Update(float delta)
 {
-	BDCharacter* pCharacter = NULL;
+	/*BDCharacter* pCharacter = NULL;
 	float oldPosX;
 	float newPosX;
 
 	if(!m_lpHost)
-		return;
-	
+	return;
+
 	pCharacter = dynamic_cast<BDCharacter*>(m_lpHost);
 
 	if(!pCharacter)
-		return;
+	return;
 
 	oldPosX = pCharacter->GetArmature()->getPositionX();
 	newPosX = oldPosX + pCharacter->GetSpeed().x;
@@ -33,6 +33,6 @@ void BDMoveAction::Update(float delta)
 
 	if(newPosX > 400.0f)
 	{
-		OnActionDone();
-	}
+	OnActionDone();
+	}*/
 }

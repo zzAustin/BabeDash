@@ -27,10 +27,17 @@ extern JSObject *jsb_BDGameLayer_prototype;
 
 //def class
 //----------------------------------------------------------------------------------------------
+class BDMovementAttr
+{
+public:
+	CCPoint ptSpeed;
+};
+
 class BDGameObjDef:public BDDef
 {
 public:
 	BDGameObjDef();
+	~BDGameObjDef();
 	std::string obj_type;
 	std::string res;
 	std::string armature;
@@ -39,6 +46,7 @@ public:
 	CCPoint speed;
 	int state;
 	int group;
+	BDMovementAttr* lpMovementAttr;
 
 	void ApplyFromDefObj(JSContext* cx,JSObject* defObj);
 };
@@ -76,12 +84,14 @@ public:
 	~BDGameLayer();
 	BDObject *AddGameObject(JSContext* cx,BDGameObjDef& def);
 	virtual void InitWorld();
+	void ccTouchesEnded(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
 	int GetType();
 	virtual void update(float delta);
 	virtual void draw();
 	void SetMainCharacter(BDCharacter* pMainCharacter);
 	BDCharacter* GetMainCharacter();
 
+	void HandleCollision(BDObject* objA,BDObject* objB);
 	void onFrameEvent(cocos2d::extension::CCBone *bone, const char *evt, int originFrameIndex, int currentFrameIndex);
 	cocos2d::extension::CCPhysicsSprite* bullet;
 	BDCharacter* mainCharacter;

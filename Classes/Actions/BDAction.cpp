@@ -7,6 +7,8 @@ BDAction::BDAction()
 {
 	m_lpHost = NULL;
 	m_iType = BDACTION_BASE;
+	m_iStatus = BDACTION_READY;
+	m_bRevocable = false;
 }
 
 BDAction::~BDAction()
@@ -34,6 +36,16 @@ void BDAction::SetHost(BDObject* pHost)
 BDObject* BDAction::GetHost()
 {
 	return m_lpHost;
+}
+
+bool BDAction::IsRevocable()
+{
+	return m_bRevocable;
+}
+
+void BDAction::SetRevocable(bool bRevocable)
+{
+	m_bRevocable = bRevocable;
 }
 
 void BDAction::Stop()

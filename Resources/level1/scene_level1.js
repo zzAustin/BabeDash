@@ -1,9 +1,18 @@
+sceneUnits = null;
+particleDefs = null;
+
 require("jsb.js");
-require("level1/objs_level1.js");//fill in --sceneObjs--
+require("level1/objs_level1.js");//fill in --sceneObjs--  --particleDefs--
 
 
 function runThisScene()
 {
+  if(particleDefs != null)
+  {
+    log("particleDefs is not null, invoke constructParticleDefs");
+	constructParticleDefs(particleDefs);
+  }
+  
   //create BDGameScene...
   var curScene = BD.BDGameScene.create();
  
@@ -47,6 +56,13 @@ function runThisScene()
 		{
 			log("---adding a game object to game layer...");
 			newObj = newUnit.addGameObject(sceneUnits[unitIdx].gameObjs[objIdx]);
+			
+			if(sceneUnits[unitIdx].gameObjs[objIdx].skills != null)
+			{
+				newObj.skills = sceneUnits[unitIdx].gameObjs[objIdx].skills;
+				newObj.playSkill = playSkill;
+			}
+			
 			log("---about to add the GameLayer to scene...");
 			//var sprt = cc.Sprite.create("res/HelloWorld.png");
 			newUnit.addChild(newObj);
