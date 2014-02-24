@@ -1,6 +1,75 @@
 #include "Util/CommonUtil.h"
 #include "cocos2d.h"
+
 USING_NS_CC;
+
+float* GetDoubleArrayJSVal(const char* field, JSObject* defObj, JSContext* cx, const int size)
+{
+	jsval vp = JSVAL_VOID;
+
+	JS_GetProperty(cx,defObj,field,&vp);
+	if(!JSVAL_IS_VOID(vp))
+	{
+		JSObject* arrObj = JSVAL_TO_OBJECT(vp); 
+
+		float* fArr = new float[size];
+
+		for(int i = 0;;i++)
+		{
+			JS_GetElement(cx,arrObj,i,&vp);
+			if(!JSVAL_IS_VOID(vp))
+			{ 
+				if(JSVAL_IS_DOUBLE(vp))
+				{
+					fArr[i] = (float)(JSVAL_TO_DOUBLE(vp));
+				}
+				else
+				{
+					fArr[i] = (float)(JSVAL_TO_INT(vp));
+				}
+			}
+			else
+			{
+				break;
+			}
+				
+		}
+
+		return fArr;
+	}
+
+	return NULL;
+}
+
+std::string& GetStrJSVal(const char* field, JSObject* defObj, JSContext* cx)
+{
+	jsval vp = JSVAL_VOID;
+
+	std::string str = NULL;
+
+	JS_GetProperty(cx,defObj,field,&vp);
+
+	if(!JSVAL_IS_VOID(vp))
+	{
+		JSString* jsstr;
+		if(JSVAL_IS_STRING(vp))
+		{
+			jsstr=JSVAL_TO_STRING(vp);
+		}
+		else
+		{
+			jsstr=JS_ValueToString(cx,vp);
+		}
+
+		size_t len;
+
+		const jschar* p = JS_GetStringCharsAndLength(cx,jsstr,&len);
+
+		WCharArrToString((unsigned short*)p,str);
+	}
+
+	return str;
+}
 
 void WCharArrToString(unsigned short* src, std::string& str)
 {
