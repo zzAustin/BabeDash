@@ -41,11 +41,11 @@ float* GetDoubleArrayJSVal(const char* field, JSObject* defObj, JSContext* cx, c
 	return NULL;
 }
 
-std::string& GetStrJSVal(const char* field, JSObject* defObj, JSContext* cx)
+std::string GetStrJSVal(const char* field, JSObject* defObj, JSContext* cx)
 {
 	jsval vp = JSVAL_VOID;
 
-	std::string str = NULL;
+	std::string str;
 
 	JS_GetProperty(cx,defObj,field,&vp);
 
@@ -69,6 +69,19 @@ std::string& GetStrJSVal(const char* field, JSObject* defObj, JSContext* cx)
 	}
 
 	return str;
+}
+
+int GetIntJSVal(const char* field, JSObject* defObj, JSContext* cx)
+{
+	jsval vp = JSVAL_VOID;
+
+	JS_GetProperty(cx,defObj,field,&vp);
+	if(!JSVAL_IS_VOID(vp))
+	{
+		return JSVAL_TO_INT(vp);
+	}
+
+	return NUMERIC_INVALID;
 }
 
 void WCharArrToString(unsigned short* src, std::string& str)

@@ -22,6 +22,8 @@ BDSceneUnitDef::BDSceneUnitDef()
 
 void BDSceneUnitDef::ApplyFromDefObj(JSContext* cx,JSObject* defObj)
 {
+
+
 	jsval vp = JSVAL_VOID;
 	JSObject* posObj = NULL;
 	JSObject* speedObj = NULL; 

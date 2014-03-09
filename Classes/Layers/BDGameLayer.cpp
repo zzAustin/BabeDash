@@ -40,190 +40,72 @@ void BDGameObjDef::ApplyFromDefObj(JSContext* cx,JSObject* defObj)
 	JSObject* posObj = NULL;
 	JSObject* speedObj = NULL;
 	JSObject* scaleObj = NULL;
-	float fRes[2];
+	float* fRes = NULL;
 	size_t len;
 
 	//get obj_type
-	JS_GetProperty(cx,defObj,"obj_type",&vp);
-	if(!JSVAL_IS_VOID(vp))
-	{
-		JSString* jsstr;
-		if(JSVAL_IS_STRING(vp))
-		{
-			jsstr=JSVAL_TO_STRING(vp);
-		}
-		else
-		{
-			jsstr=JS_ValueToString(cx,vp);
-		}
-		const jschar* p = JS_GetStringCharsAndLength(cx,jsstr,&len);
-		WCharArrToString((unsigned short*)p,this->obj_type);
-	}
+	this->obj_type = GetStrJSVal("obj_type",defObj,cx);
 
-	//get res
-	JS_GetProperty(cx,defObj,"res",&vp);
-	if(!JSVAL_IS_VOID(vp))
-	{
-		JSString* jsstr;
-		if(JSVAL_IS_STRING(vp))
-		{
-			jsstr=JSVAL_TO_STRING(vp);
-		}
-		else
-		{
-			jsstr=JS_ValueToString(cx,vp);
-		}
-		const jschar* p = JS_GetStringCharsAndLength(cx,jsstr,&len);
-		WCharArrToString((unsigned short*)p,this->res);
-	}
+	//get res	
+	this->res =  GetStrJSVal("res",defObj,cx);
 
 	//get armature
-	JS_GetProperty(cx,defObj,"armature",&vp);
-	if(!JSVAL_IS_VOID(vp))
-	{
-		JSString* jsstr;
-		if(JSVAL_IS_STRING(vp))
-		{
-			jsstr=JSVAL_TO_STRING(vp);
-		}
-		else
-		{
-			jsstr=JS_ValueToString(cx,vp);
-		}
-		const jschar* p = JS_GetStringCharsAndLength(cx,jsstr,&len);
-		WCharArrToString((unsigned short*)p,this->armature);
-	}
+	this->armature =  GetStrJSVal("armature",defObj,cx);
 
 	//get pos info
-	JS_GetProperty(cx,defObj,"pos",&vp);
-	if(!JSVAL_IS_VOID(vp))
+	fRes = GetDoubleArrayJSVal("pos", defObj, cx, 2);
+
+	if(fRes != NULL)
 	{
-		posObj = JSVAL_TO_OBJECT(vp); 
-		for(int i = 0;;i++)
-		{
-			JS_GetElement(cx,posObj,i,&vp);
-			if(!JSVAL_IS_VOID(vp))
-			{ 
-				if(JSVAL_IS_DOUBLE(vp))
-				{
-					fRes[i] = (float)(JSVAL_TO_DOUBLE(vp));
-				}
-				else
-				{
-					fRes[i] = (float)(JSVAL_TO_INT(vp));
-				}
-			}
-			else
-				break;
-		}
 		this->pos.x = fRes[0];
 		this->pos.y = fRes[1];
 	}
 
 
 	//get speed info
-	JS_GetProperty(cx,defObj,"speed",&vp);
-	if(!JSVAL_IS_VOID(vp))
+	fRes = GetDoubleArrayJSVal("speed", defObj, cx, 2);
+
+	if(fRes != NULL)
 	{
-		speedObj = JSVAL_TO_OBJECT(vp);
-		for(int i = 0;;i++)
-		{
-			JS_GetElement(cx,speedObj,i,&vp);
-			if(!JSVAL_IS_VOID(vp))
-			{
-				if(JSVAL_IS_DOUBLE(vp))
-				{
-					fRes[i] = (float)(JSVAL_TO_DOUBLE(vp));
-				}
-				else
-				{
-					fRes[i] = (float)(JSVAL_TO_INT(vp));
-				}
-			}
-			else
-				break;
-		}
 		this->speed.x = fRes[0];
 		this->speed.y = fRes[1];
 	}
 
 	//get scale info
-	JS_GetProperty(cx,defObj,"scale",&vp);
-	if(!JSVAL_IS_VOID(vp))
+	fRes = GetDoubleArrayJSVal("scale", defObj, cx, 2);
+
+	if(fRes != NULL)
 	{
-		scaleObj = JSVAL_TO_OBJECT(vp);
-		for(int i = 0;;i++)
-		{
-			JS_GetElement(cx,scaleObj,i,&vp);
-			if(!JSVAL_IS_VOID(vp))
-			{
-				if(JSVAL_IS_DOUBLE(vp))
-				{
-					fRes[i] = (float)(JSVAL_TO_DOUBLE(vp));
-				}
-				else
-				{
-					fRes[i] = (float)(JSVAL_TO_INT(vp));
-				}
-			}
-			else
-				break;
-		}
 		this->scale.x = fRes[0];
 		this->scale.y = fRes[1];
 	}
 
 	//get group
-	JS_GetProperty(cx,defObj,"group",&vp);
-	if(!JSVAL_IS_VOID(vp))
-	{
-		this->group = JSVAL_TO_INT(vp);
-	}
+	this->group = GetIntJSVal("group", defObj, cx);
+	
 
-	//get state
-	JS_GetProperty(cx,defObj,"state",&vp);
-	if(!JSVAL_IS_VOID(vp))
-	{
-		this->state = JSVAL_TO_INT(vp);
-	}
+	//get state	
+	this->state = GetIntJSVal("state", defObj, cx);
+
 
 	JS_GetProperty(cx,defObj,"movement_component",&vp);
-	{
-		jsval v = JSVAL_NULL;
-		JSObject* moveCompObj = NULL;
-		JSObject* speedObj = NULL;
+	
+	jsval v = JSVAL_NULL;
+	JSObject* moveCompObj = NULL;
 
-		if(!JSVAL_IS_VOID(vp))
+	if(!JSVAL_IS_VOID(vp))
+	{
+		moveCompObj = JSVAL_TO_OBJECT(vp);
+		lpMovementAttr = new BDMovementAttr();
+			
+		fRes = GetDoubleArrayJSVal("speed", moveCompObj, cx, 2);
+
+		if(fRes != NULL)
 		{
-			moveCompObj = JSVAL_TO_OBJECT(vp);
-			lpMovementAttr = new BDMovementAttr();
-			JS_GetProperty(cx,moveCompObj,"speed",&v);
-			if(!JSVAL_IS_VOID(v))
-			{
-				speedObj = JSVAL_TO_OBJECT(v);
-				for(int i = 0;;i++)
-				{
-					JS_GetElement(cx,speedObj,i,&v);
-					if(!JSVAL_IS_VOID(v))
-					{
-						if(JSVAL_IS_DOUBLE(v))
-						{
-							fRes[i] = (float)(JSVAL_TO_DOUBLE(v));
-						}
-						else
-						{
-							fRes[i] = (float)(JSVAL_TO_INT(v));
-						}
-					}
-					else
-						break;
-				}
-			}
 			lpMovementAttr->ptSpeed.x = fRes[0];
 			lpMovementAttr->ptSpeed.y = fRes[1];
 		}
 
-		
 	}
 }
 

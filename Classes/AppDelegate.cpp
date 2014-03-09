@@ -46,7 +46,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 
 	CCEGLView::sharedOpenGLView()->setDesignResolutionSize(960, 640, kResolutionShowAll);  
 	//pDirector->setContentScaleFactor(min(1.0/CCEGLView::sharedOpenGLView()->getScaleX(),1.0/CCEGLView::sharedOpenGLView()->getScaleY()));
-	
+
     
     ScriptingCore* sc = ScriptingCore::getInstance();
     sc->addRegisterCallback(register_all_cocos2dx);
