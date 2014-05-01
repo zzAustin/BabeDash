@@ -145,6 +145,7 @@ void ContactListener::PostSolve(const b2Contact *contact, const b2ContactImpulse
 //native class
 BDGameLayer::~BDGameLayer()
 {
+	if(m_pChildren != NULL)
     m_pChildren->removeAllObjects();
 	CC_SAFE_DELETE(m_lpGameWorld);
 	CC_SAFE_DELETE(m_lpDebugDraw);
@@ -317,7 +318,7 @@ BDObject* BDGameLayer::AddGameObject(JSContext* cx,BDGameObjDef& def)
 		{
 			SetMainCharacter(pCharacter);
 	        pCharacter->SetIsMainCharacter(true);
-
+			pCharacter->ApplyImpulse();
 			/*BDParticleSystem* m_emitter = BDParticleSystem::create("lavaflow.plist",true);
 			m_emitter->retain();
 			pCharacter->addChild(m_emitter, 10);
@@ -339,6 +340,8 @@ BDObject* BDGameLayer::AddGameObject(JSContext* cx,BDGameObjDef& def)
 			pCharacter->addComponent(pCharacter->GetMovementComp());
 			pCharacter->GetMovementComp()->setEnabled(true);
 		} 
+
+
 
 		//if(bullet == NULL)
 		//{
@@ -383,7 +386,7 @@ BDObject* BDGameLayer::AddGameObject(JSContext* cx,BDGameObjDef& def)
 
 void BDGameLayer::InitWorld()
 {
-	b2Vec2 noGravity(0, 0);
+	b2Vec2 noGravity(0.0f, -10.0f);
 
 	m_lpGameWorld = new b2World(noGravity);
 	m_lpGameWorld->SetAllowSleeping(true);
@@ -399,9 +402,118 @@ void BDGameLayer::InitWorld()
 	//        flags += b2Draw::e_jointBit;
 	//        flags += b2Draw::e_aabbBit;
 	//        flags += b2Draw::e_pairBit;
-	//        flags += b2Draw::e_centerOfMassBit;
+	        flags += b2Draw::e_centerOfMassBit;
 	m_lpDebugDraw->SetFlags(flags);
+
+
+	CreateBodiesTest2();
 }
+
+void BDGameLayer::CreateBodiesTest() 
+{
+
+	  //class member variable to keep track of three bodies
+  b2Body* bodies[3];
+  
+    //body definition
+    b2BodyDef myBodyDef;
+    myBodyDef.type = b2_dynamicBody;
+    
+    //polygone shape definition
+    b2PolygonShape polygonShape;
+    polygonShape.SetAsBox(1, 1); //a 2x2 rectangle
+  
+	//circle shape definition
+		b2CircleShape circleShape;
+		circleShape.m_p.Set(0, 0); //position, relative to body position
+		circleShape.m_radius = 1; //radius
+
+
+    //fixture definition
+    b2FixtureDef myFixtureDef;
+    myFixtureDef.shape = &polygonShape;
+    myFixtureDef.density = 0;
+    myFixtureDef.restitution = 0.8;
+	myFixtureDef.friction=1;
+    //create identical bodies in different positions
+    for (int i = 0; i < 3; i++) {
+      myBodyDef.position.Set(25, 10+i*1);
+      bodies[i] = m_lpGameWorld->CreateBody(&myBodyDef);
+
+	  if(i==1 || i ==2)
+	  {
+
+
+		myFixtureDef.shape=&circleShape;
+
+		if(i == 2)
+		{
+			myFixtureDef.friction = 1;
+		}
+	  }
+
+
+      b2Fixture* fixture =  bodies[i]->CreateFixture(&myFixtureDef);
+
+	  b2Filter filter;
+	  							filter.categoryBits = BDObject::GROUP_MASK_BABE;
+							filter.maskBits =  BDObject::GROUP_MASK_BABE;
+							fixture->SetFilterData(filter);
+
+    }
+    
+    //a static floor to drop things on
+    myBodyDef.type = b2_staticBody;
+    myBodyDef.position.Set(0, 0);
+
+
+	b2EdgeShape edgeShape;
+	edgeShape.Set( b2Vec2(0,0), b2Vec2(30,5) );  
+	myFixtureDef.shape = &edgeShape;
+	myFixtureDef.friction = 1;
+
+	b2Filter filter;
+	  							filter.categoryBits = BDObject::GROUP_MASK_BABE;
+							filter.maskBits =  BDObject::GROUP_MASK_BABE;
+    m_lpGameWorld->CreateBody(&myBodyDef)->CreateFixture(&myFixtureDef)->SetFilterData(filter);
+}
+
+void BDGameLayer::CreateBodiesTest2() 
+{
+
+	    //set up a dynamic body
+    b2BodyDef myBodyDef;
+    myBodyDef.type = b2_dynamicBody;
+    myBodyDef.position.Set(20, 20); //middle
+    b2Body* dynamicBody = m_lpGameWorld->CreateBody(&myBodyDef);
+    
+    //prepare a shape definition
+    b2PolygonShape polygonShape;
+    b2FixtureDef myFixtureDef;
+    myFixtureDef.shape = &polygonShape;
+    myFixtureDef.density = 1;
+	myFixtureDef.restitution = 0;
+	myFixtureDef.friction = 10;
+
+    //add four square shaped fixtures around the body center
+    for ( int i = 0; i < 4; i++) {
+      b2Vec2 pos( sinf(i*90*30), cosf(i*90*30) ); //radial placement
+      polygonShape.SetAsBox(1, 1, pos, 0 ); //a 2x2 rectangle
+      dynamicBody->CreateFixture(&myFixtureDef); //add a fixture to the body
+    }
+    
+    //make a static floor to drop things on
+    myBodyDef.type = b2_staticBody;
+    myBodyDef.position.Set(0, 0); //middle, bottom
+    b2Body* staticBody = m_lpGameWorld->CreateBody(&myBodyDef);  
+	b2EdgeShape edgeShape;
+	edgeShape.Set( b2Vec2(0,0), b2Vec2(30,5) );  
+	myFixtureDef.shape = &edgeShape; //slightly sloped  
+	myFixtureDef.restitution = 0;
+	myFixtureDef.friction = 10;
+    staticBody->CreateFixture(&myFixtureDef); //add a fixture to the body
+}
+
 
 void BDGameLayer::draw() 
 {
@@ -443,6 +555,9 @@ void BDGameLayer::update(float delta)
 		BDArmature* ba_b = NULL;
 		BDObject* owner_a = NULL;
 		BDObject* owner_b = NULL;
+
+		if(ba == NULL || bb == NULL)
+			return;
 
 		aa = ba->getArmature();
 		ba_a = dynamic_cast<BDArmature*>(aa);

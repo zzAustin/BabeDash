@@ -40,10 +40,10 @@ function runThisScene()
 	//SceneryLayer
 	if(sceneUnits[unitIdx].unit_type == "SceneryLayer")
 	{
-		log("---the unit is a SceneryLayer");
+		/*log("---the unit is a SceneryLayer");
 		var attr = sceneUnits[unitIdx].attributes;
 		newUnit.initWithAttributes(attr);
-		bdGlobals.curScene.addChild(newUnit);
+		bdGlobals.curScene.addChild(newUnit); */
 	}
 	
 	//GameLayer

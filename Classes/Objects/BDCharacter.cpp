@@ -193,17 +193,18 @@ void BDCharacter::GrowBody()
 	////dynamicBox.SetAsBox(.5f, .5f);//These are mid points for our 1m box
 
 	////// Define the dynamic body fixture.
-	////b2FixtureDef fixtureDef;
-	////fixtureDef.shape = &dynamicBox;
+	//b2FixtureDef fixtureDef;
+	//b2PolygonShape polygonShape;
+	//polygonShape.SetAsBox(2, 1);
+	//fixtureDef.shape = &polygonShape;
 	////fixtureDef.isSensor = true;
-	////body->CreateFixture(&fixtureDef);
+	//body->CreateFixture(&fixtureDef);
 
 
 	////bullet->setB2Body(body);
 	////bullet->setPTMRatio(PT_RATIO);
 	////bullet->setPosition( ccp( -100, -100) );
 
-	body = m_lpGameWorld->CreateBody(&bodyDef);
 	m_lpArmature->setBody(body);
 }
 
@@ -227,6 +228,18 @@ BDArmature* BDCharacter::GetArmature()
 void BDCharacter::SetArmature(BDArmature* pArmature)
 {
 	m_lpArmature = pArmature;
+}
+
+void BDCharacter::ApplyImpulse()
+{
+	b2Body* body = m_lpArmature->getBody();
+
+	b2Vec2 impulse(10.0f,10.0f);
+	b2Vec2 pt(0.0f,0.0f);
+
+	//body->ApplyLinearImpulse(impulse, body->GetWorldCenter());
+	//body->ApplyAngularImpulse(5);
+	//body->ApplyForce(impulse,body->GetWorldPoint( b2Vec2(1,1) ));
 }
 
 void BDCharacter::SetGroup(int group)
@@ -376,6 +389,16 @@ void BDCharacter::SetIsMainCharacter(bool isMainCharacter)
 void BDCharacter::update(float dt)
 {
 	CCNode::update(dt);
+
+	//==========================
+	b2Body* body = m_lpArmature->getBody();
+
+	b2Vec2 impulse(0.0f,10.0f);
+
+	//body->ApplyLinearImpulse(impulse, body->GetWorldCenter());
+	body->ApplyAngularImpulse(20);
+	//body->ApplyForce(impulse,body->GetWorldCenter());
+	//==========================
 
 	m_lpArmature->update(dt);
 

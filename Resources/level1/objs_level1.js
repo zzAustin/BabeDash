@@ -1,5 +1,5 @@
 sceneUnits = [
-			  //Scenery Far layer
+		/*	  //Scenery Far layer
               {unit_type:"SceneryLayer",
 			   attributes:{pos:[0.0,0.0],speed:[2.0,0.0],map1:"scene_far1.png",map2:"scene_far2.png"},
 			  },
@@ -7,12 +7,12 @@ sceneUnits = [
               //Scenery Near layer
               {unit_type:"SceneryLayer",
 			   attributes:{pos:[0.0,0.0],speed:[0.0,0.0],map1:"scene_near1.png",map2:"scene_near2.png"},
-			  },
+			  },*/
 			  
               //GameLayer
 			  {unit_type:"GameLayer",//scene unit type
 			   gameObjs:[//objects of GameLayer
-						 {obj_type:"Character",
+						 /*{obj_type:"Character",
 						  res:"Cowboy.ExportJson",armature:"Cowboy",pos:[400.0,230.0],scale:[-0.2,0.2],speed:[1.0,3.0],
 						  group:bdGlobals.OBJ_GROUP_BABE,
 						  //state:bdGlobals.CHAR_STATE_IDLE,
@@ -43,14 +43,14 @@ sceneUnits = [
 						   skills:{
 								Jump:{action:bdGlobals.BDACTION_JUMP,particle:{name:"galaxy.plist",positionType:bdGlobals.particleFree}},
 						    }
-						  },
+						  },    */
 						]
 			  },
 			  
 			    //SceneryLayer
-              {unit_type:"SceneryLayer",
+              /*{unit_type:"SceneryLayer",
 			   attributes:{pos:[0.0,0.0],speed:[0.0,0.0],map1:"scene_front1.png",map2:"scene_front2.png"},
-			  },
+			  },   */
 			  
             ];
 			

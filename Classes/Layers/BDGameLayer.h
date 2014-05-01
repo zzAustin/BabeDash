@@ -49,6 +49,7 @@ public:
 	BDMovementAttr* lpMovementAttr;
 
 	void ApplyFromDefObj(JSContext* cx,JSObject* defObj);
+
 };
 
 //box2d
@@ -90,6 +91,8 @@ public:
 	virtual void draw();
 	void SetMainCharacter(BDCharacter* pMainCharacter);
 	BDCharacter* GetMainCharacter();
+	void CreateBodiesTest() ;
+	void CreateBodiesTest2() ;
 
 	void HandleCollision(BDObject* objA,BDObject* objB);
 	void onFrameEvent(cocos2d::extension::CCBone *bone, const char *evt, int originFrameIndex, int currentFrameIndex);

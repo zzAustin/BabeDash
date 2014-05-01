@@ -51,6 +51,7 @@ public:
 	static BDCharacter* CreateWithGameLayer(BDGameLayer* pGameLayer);
 	~BDCharacter();
 	static BDCharacter* Create();
+	void ApplyImpulse();
 
 	//override the CCNode setPosition
 	void SetPosition(const CCPoint &position,bool bMoveArmature);
