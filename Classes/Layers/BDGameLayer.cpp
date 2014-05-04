@@ -427,7 +427,9 @@ void BDGameLayer::update(float delta)
 	}   
 
 	//step the physics world
-	m_lpGameWorld->Step(delta, 0, 0);
+	int32 velocityIterations = 8;   //how strongly to correct velocity
+	int32 positionIterations = 3;   //how strongly to correct position
+	m_lpGameWorld->Step(delta, velocityIterations, positionIterations);
 
 	//enemy->GetArmature()->setVisible(true);
 	for (std::list<Contact>::iterator it = m_lpContactListener->contact_list.begin(); it != m_lpContactListener->contact_list.end(); ++it)
