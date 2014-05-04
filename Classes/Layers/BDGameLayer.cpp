@@ -386,7 +386,7 @@ BDObject* BDGameLayer::AddGameObject(JSContext* cx,BDGameObjDef& def)
 
 void BDGameLayer::InitWorld()
 {
-	b2Vec2 noGravity(0.0f, -10.0f);
+	b2Vec2 noGravity(0.0f, -9.8f);
 
 	m_lpGameWorld = new b2World(noGravity);
 	m_lpGameWorld->SetAllowSleeping(true);
@@ -437,7 +437,9 @@ void BDGameLayer::CreateBodiesTest()
 	myFixtureDef.friction=1;
     //create identical bodies in different positions
     for (int i = 0; i < 3; i++) {
-      myBodyDef.position.Set(25, 10+i*1);
+      myBodyDef.position.Set(15, 15+5*i);
+	  CCSize size = CCDirector::sharedDirector()->getWinSize();
+	  CCSize size2 = CCDirector::sharedDirector()->getWinSizeInPixels();
       bodies[i] = m_lpGameWorld->CreateBody(&myBodyDef);
 
 	  if(i==1 || i ==2)
@@ -470,7 +472,7 @@ void BDGameLayer::CreateBodiesTest()
 	b2EdgeShape edgeShape;
 	edgeShape.Set( b2Vec2(0,0), b2Vec2(30,5) );  
 	myFixtureDef.shape = &edgeShape;
-	myFixtureDef.friction = 1;
+	myFixtureDef.friction = 0;
 
 	b2Filter filter;
 	  							filter.categoryBits = BDObject::GROUP_MASK_BABE;
@@ -492,12 +494,12 @@ void BDGameLayer::CreateBodiesTest2()
     b2FixtureDef myFixtureDef;
     myFixtureDef.shape = &polygonShape;
     myFixtureDef.density = 1;
-	myFixtureDef.restitution = 0;
-	myFixtureDef.friction = 10;
+	myFixtureDef.restitution = 0.8;
+	myFixtureDef.friction = 0;
 
     //add four square shaped fixtures around the body center
     for ( int i = 0; i < 4; i++) {
-      b2Vec2 pos( sinf(i*90*30), cosf(i*90*30) ); //radial placement
+      b2Vec2 pos( sinf(i*90*DEGTORAD), cosf(i*90*DEGTORAD) ); //radial placement
       polygonShape.SetAsBox(1, 1, pos, 0 ); //a 2x2 rectangle
       dynamicBody->CreateFixture(&myFixtureDef); //add a fixture to the body
     }
@@ -509,8 +511,8 @@ void BDGameLayer::CreateBodiesTest2()
 	b2EdgeShape edgeShape;
 	edgeShape.Set( b2Vec2(0,0), b2Vec2(30,5) );  
 	myFixtureDef.shape = &edgeShape; //slightly sloped  
-	myFixtureDef.restitution = 0;
-	myFixtureDef.friction = 10;
+	myFixtureDef.restitution = 0.5;
+	myFixtureDef.friction = 0.5;
     staticBody->CreateFixture(&myFixtureDef); //add a fixture to the body
 }
 
@@ -539,7 +541,7 @@ void BDGameLayer::update(float delta)
 	}   
 
 	//step the physics world
-	m_lpGameWorld->Step(delta, 0, 0);
+	m_lpGameWorld->Step(1/60.0, 8, 3);
 
 	//enemy->GetArmature()->setVisible(true);
 	for (std::list<Contact>::iterator it = m_lpContactListener->contact_list.begin(); it != m_lpContactListener->contact_list.end(); ++it)

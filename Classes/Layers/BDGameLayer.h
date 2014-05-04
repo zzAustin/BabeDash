@@ -8,7 +8,8 @@
 #include "Objects/BDCharacter.h"
 #include "CocoStudio/Armature/animation/CCArmatureAnimation.h"
 
-
+#define DEGTORAD 0.0174532925199432957f
+#define RADTODEG 57.295779513082320876f
 
 
 #define ENABLE_PHYSICS_BOX2D_DETECT 1//BabeDash utilizes box2d for physics
