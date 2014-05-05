@@ -189,14 +189,14 @@ void BDCharacter::GrowBody()
 	b2Body *body = m_lpGameWorld->CreateBody(&bodyDef); 
 
 	////// Define another box shape for our dynamic body.
-	////b2PolygonShape dynamicBox;
-	////dynamicBox.SetAsBox(.5f, .5f);//These are mid points for our 1m box
+	b2PolygonShape dynamicBox;
+	dynamicBox.SetAsBox(1.0f, 1.0f);//These are mid points for our 1m box
 
 	////// Define the dynamic body fixture.
-	////b2FixtureDef fixtureDef;
-	////fixtureDef.shape = &dynamicBox;
+	b2FixtureDef fixtureDef;
+	fixtureDef.shape = &dynamicBox;
 	////fixtureDef.isSensor = true;
-	////body->CreateFixture(&fixtureDef);
+	body->CreateFixture(&fixtureDef);
 
 
 	////bullet->setB2Body(body);
@@ -269,12 +269,12 @@ void BDCharacter::SetGroup(int group)
 						{
 						case GROUP_BABE:
 							filter.categoryBits = BDObject::GROUP_CATEGORY_BABE;
-							filter.maskBits =  BDObject::GROUP_MASK_BABE;
+							filter.maskBits =  BDObject::GROUP_CATEGORY_ENEMY;
 							fixture->SetFilterData(filter);
 							break;
 						case GROUP_ENEMY:
 							filter.categoryBits = BDObject::GROUP_CATEGORY_ENEMY;
-							filter.maskBits = BDObject::GROUP_MASK_ENEMY;
+							filter.maskBits = BDObject::GROUP_CATEGORY_BABE;
 							fixture->SetFilterData(filter);
 							break;
 						case GROUP_ITEM:

@@ -68,7 +68,7 @@ class ContactListener : public b2ContactListener
 	virtual void PreSolve(b2Contact *contact, const b2Manifold *oldManifold);
 	virtual void PostSolve(const b2Contact *contact, const b2ContactImpulse *impulse);
 public:
-	std::list<Contact> contact_list;
+	std::list<b2Contact *> contact_list;
 };
 
 

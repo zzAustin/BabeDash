@@ -115,11 +115,11 @@ void ContactListener::BeginContact(b2Contact *contact)
 {
 	if (contact)  
 	{
-		Contact c;
+		/*Contact c;
 		c.fixtureA = contact->GetFixtureA(); 
-		c.fixtureB = contact->GetFixtureB();
+		c.fixtureB = contact->GetFixtureB();*/
 
-		contact_list.push_back(c);
+		contact_list.push_back(contact);
 	}
 	B2_NOT_USED(contact);
 }
@@ -429,16 +429,21 @@ void BDGameLayer::update(float delta)
 	//step the physics world
 	int32 velocityIterations = 8;   //how strongly to correct velocity
 	int32 positionIterations = 3;   //how strongly to correct position
-	m_lpGameWorld->Step(delta, velocityIterations, positionIterations);
+	m_lpGameWorld->Step(delta, 8, 0);
 
 	//enemy->GetArmature()->setVisible(true);
-	for (std::list<Contact>::iterator it = m_lpContactListener->contact_list.begin(); it != m_lpContactListener->contact_list.end(); ++it)
+	for (std::list<b2Contact*>::iterator it = m_lpContactListener->contact_list.begin(); it != m_lpContactListener->contact_list.end(); ++it)
 	{
-		Contact &contact = *it;
+		b2Contact *contact = *it;
 
-		CCBone *ba = (CCBone *)contact.fixtureA->GetUserData();
-		CCBone *bb = (CCBone *)contact.fixtureB->GetUserData();
+		CCBone *ba = (CCBone *)contact->GetFixtureA()->GetUserData();
+		CCBone *bb = (CCBone *)contact->GetFixtureB()->GetUserData();
 		 
+		if(ba == NULL || bb == NULL)
+		{
+			continue;
+		}
+
 		extension::CCArmature* aa = NULL;
 		extension::CCArmature* ab = NULL;
 		BDArmature* ba_a = NULL;
