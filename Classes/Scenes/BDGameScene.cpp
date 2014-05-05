@@ -22,80 +22,34 @@ BDSceneUnitDef::BDSceneUnitDef()
 
 void BDSceneUnitDef::ApplyFromDefObj(JSContext* cx,JSObject* defObj)
 {
+
+
 	jsval vp = JSVAL_VOID;
 	JSObject* posObj = NULL;
 	JSObject* speedObj = NULL; 
-	float fRes[2];
+	
 	size_t len;
 
 	//get obj_type
-	JS_GetProperty(cx,defObj,"obj_type",&vp);
-	if(!JSVAL_IS_VOID(vp))
-	{
-		JSString* jsstr;
-		if(JSVAL_IS_STRING(vp))
-		{
-			jsstr=JSVAL_TO_STRING(vp);
-		}
-		else
-		{
-			jsstr=JS_ValueToString(cx,vp);
-		}
-		const jschar* p = JS_GetStringCharsAndLength(cx,jsstr,&len);
-		WCharArrToString((unsigned short*)p,this->obj_type);
-	}
-
+	this->obj_type = GetStrJSVal("obj_type", defObj, cx);
+	
 
 
 	//get pos info
-	JS_GetProperty(cx,defObj,"pos",&vp);
-	if(!JSVAL_IS_VOID(vp))
+	float* fRes = GetDoubleArrayJSVal("pos", defObj, cx, 2);
+
+	if(fRes != NULL)
 	{
-		posObj = JSVAL_TO_OBJECT(vp); 
-		for(int i = 0;;i++)
-		{
-			JS_GetElement(cx,posObj,i,&vp);
-			if(!JSVAL_IS_VOID(vp))
-			{ 
-				if(JSVAL_IS_DOUBLE(vp))
-				{
-					fRes[i] = (float)(JSVAL_TO_DOUBLE(vp));
-				}
-				else
-				{
-					fRes[i] = (float)(JSVAL_TO_INT(vp));
-				}
-			}
-			else
-				break;
-		}
 		this->pos.x = fRes[0];
 		this->pos.y = fRes[1];
 	}
 
-
 	//get speed info
-	JS_GetProperty(cx,defObj,"speed",&vp);
-	if(!JSVAL_IS_VOID(vp))
+
+	fRes = GetDoubleArrayJSVal("speed", defObj, cx, 2);
+
+	if(fRes != NULL)
 	{
-		speedObj = JSVAL_TO_OBJECT(vp);
-		for(int i = 0;;i++)
-		{
-			JS_GetElement(cx,speedObj,i,&vp);
-			if(!JSVAL_IS_VOID(vp))
-			{
-				if(JSVAL_IS_DOUBLE(vp))
-				{
-					fRes[i] = (float)(JSVAL_TO_DOUBLE(vp));
-				}
-				else
-				{
-					fRes[i] = (float)(JSVAL_TO_INT(vp));
-				}
-			}
-			else
-				break;
-		}
 		this->speed.x = fRes[0];
 		this->speed.y = fRes[1];
 	}
