@@ -82,14 +82,14 @@ void BDGameObjDef::ApplyFromDefObj(JSContext* cx,JSObject* defObj)
 
 	//get group
 	this->group = GetIntJSVal("group", defObj, cx);
-	
+
 
 	//get state	
 	this->state = GetIntJSVal("state", defObj, cx);
 
 
 	JS_GetProperty(cx,defObj,"movement_component",&vp);
-	
+
 	jsval v = JSVAL_NULL;
 	JSObject* moveCompObj = NULL;
 
@@ -97,7 +97,7 @@ void BDGameObjDef::ApplyFromDefObj(JSContext* cx,JSObject* defObj)
 	{
 		moveCompObj = JSVAL_TO_OBJECT(vp);
 		lpMovementAttr = new BDMovementAttr();
-			
+
 		fRes = GetDoubleArrayJSVal("speed", moveCompObj, cx, 2);
 
 		if(fRes != NULL)
@@ -146,7 +146,7 @@ void ContactListener::PostSolve(const b2Contact *contact, const b2ContactImpulse
 BDGameLayer::~BDGameLayer()
 {
 	if(m_pChildren != NULL)
-    m_pChildren->removeAllObjects();
+		m_pChildren->removeAllObjects();
 	CC_SAFE_DELETE(m_lpGameWorld);
 	CC_SAFE_DELETE(m_lpDebugDraw);
 }
@@ -174,19 +174,19 @@ BDGameLayer::BDGameLayer(BDGameScene* pScene)
 
 void BDGameLayer::onFrameEvent(extension::CCBone *bone, const char *evt, int originFrameIndex, int currentFrameIndex)
 {
-    CCLOG("(%s) emit a frame event (%s) at frame index (%d).", bone->getName().c_str(), evt, currentFrameIndex);
+	CCLOG("(%s) emit a frame event (%s) at frame index (%d).", bone->getName().c_str(), evt, currentFrameIndex);
 
-    /*
-    * originFrameIndex is the frame index editted in Action Editor
-    * currentFrameIndex is the current index animation played to
-    * frame event may be delay emit, so originFrameIndex may be different from currentFrameIndex.
-    */
+	/*
+	* originFrameIndex is the frame index editted in Action Editor
+	* currentFrameIndex is the current index animation played to
+	* frame event may be delay emit, so originFrameIndex may be different from currentFrameIndex.
+	*/
 
-    CCPoint p = mainCharacter->GetArmature()->getBone("Layer126")->getDisplayRenderNode()->convertToWorldSpaceAR(ccp(0, 0));
-    bullet->setPosition(ccp(p.x + 60, p.y));
+	CCPoint p = mainCharacter->GetArmature()->getBone("Layer126")->getDisplayRenderNode()->convertToWorldSpaceAR(ccp(0, 0));
+	bullet->setPosition(ccp(p.x + 60, p.y));
 
-    bullet->stopAllActions();
-    bullet->runAction(CCMoveBy::create(1.5f, ccp(350, 0)));
+	bullet->stopAllActions();
+	bullet->runAction(CCMoveBy::create(1.5f, ccp(350, 0)));
 }
 
 
@@ -199,7 +199,7 @@ BDGameLayer *BDGameLayer::CreateWithScene(BDGameScene* pScene)
 	{
 		pRet->autorelease();
 		//pRet->scheduleUpdate();
-		
+
 		return pRet;
 	}
 	else
@@ -253,7 +253,7 @@ void BDGameLayer::ccTouchesEnded(cocos2d::CCSet* touches, cocos2d::CCEvent* even
 	/*BDAction* pJumpAction = new BDJumpAction(pMainCharacter,-0.1f);
 	CCPoint sp = pMainCharacter->GetMovementComp()->GetCurSpeed();
 	if(pMainCharacter->GetCurBDAction() == NULL)
-		pMainCharacter->GetMovementComp()->SetCurSpeed(pMainCharacter->GetMovementComp()->GetOrigSpeed()); 
+	pMainCharacter->GetMovementComp()->SetCurSpeed(pMainCharacter->GetMovementComp()->GetOrigSpeed()); 
 	pMainCharacter->SetCurBDAction(pJumpAction);*/
 	pMainCharacter->PlaySkill(BDSKILL_JUMP);
 }
@@ -283,11 +283,11 @@ BDObject* BDGameLayer::AddGameObject(JSContext* cx,BDGameObjDef& def)
 
 	if(def.obj_type.find("Character") != std::string::npos)
 	{
-		
+
 		BDCharacter* pCharacter = NULL;
 		pCharacter = BDCharacter::CreateWithGameLayer(this);
 		CCAssert(pCharacter != NULL,"---BDGameLayer::AddGameObject--- newly created pCharacter is NULL!");
-	/*	JSObject* jsObj = JS_NewObject(cx,jsb_BDCharacter_class,jsb_BDCharacter_prototype,jsb_CCArmature_prototype);
+		/*	JSObject* jsObj = JS_NewObject(cx,jsb_BDCharacter_class,jsb_BDCharacter_prototype,jsb_CCArmature_prototype);
 		CCAssert(jsObj!=NULL,"---BDGameLayer::AddGameObject jsObj is NULL");
 		pCharacter->SetJSObject(jsObj);*/
 		pCharacter->BuildArmature(def.res.c_str(),def.armature.c_str());
@@ -317,7 +317,7 @@ BDObject* BDGameLayer::AddGameObject(JSContext* cx,BDGameObjDef& def)
 		if(def.group == GROUP_BABE)//set the main character pointer to GameLayer
 		{
 			SetMainCharacter(pCharacter);
-	        pCharacter->SetIsMainCharacter(true);
+			pCharacter->SetIsMainCharacter(true);
 			pCharacter->ApplyImpulse();
 			/*BDParticleSystem* m_emitter = BDParticleSystem::create("lavaflow.plist",true);
 			m_emitter->retain();
@@ -380,7 +380,7 @@ BDObject* BDGameLayer::AddGameObject(JSContext* cx,BDGameObjDef& def)
 		//
 		return pCharacter;
 	}
-	
+
 	return NULL;
 }
 
@@ -402,71 +402,71 @@ void BDGameLayer::InitWorld()
 	//        flags += b2Draw::e_jointBit;
 	//        flags += b2Draw::e_aabbBit;
 	//        flags += b2Draw::e_pairBit;
-	        flags += b2Draw::e_centerOfMassBit;
+	flags += b2Draw::e_centerOfMassBit;
 	m_lpDebugDraw->SetFlags(flags);
 
 
-	CreateBodiesTest2();
+	CreateBodiesTest3();
 }
 
 void BDGameLayer::CreateBodiesTest() 
 {
 
-	  //class member variable to keep track of three bodies
-  b2Body* bodies[3];
-  
-    //body definition
-    b2BodyDef myBodyDef;
-    myBodyDef.type = b2_dynamicBody;
-    
-    //polygone shape definition
-    b2PolygonShape polygonShape;
-    polygonShape.SetAsBox(1, 1); //a 2x2 rectangle
-  
+	//class member variable to keep track of three bodies
+	b2Body* bodies[3];
+
+	//body definition
+	b2BodyDef myBodyDef;
+	myBodyDef.type = b2_dynamicBody;
+
+	//polygone shape definition
+	b2PolygonShape polygonShape;
+	polygonShape.SetAsBox(1, 1); //a 2x2 rectangle
+
 	//circle shape definition
-		b2CircleShape circleShape;
-		circleShape.m_p.Set(0, 0); //position, relative to body position
-		circleShape.m_radius = 1; //radius
+	b2CircleShape circleShape;
+	circleShape.m_p.Set(0, 0); //position, relative to body position
+	circleShape.m_radius = 1; //radius
 
 
-    //fixture definition
-    b2FixtureDef myFixtureDef;
-    myFixtureDef.shape = &polygonShape;
-    myFixtureDef.density = 0;
-    myFixtureDef.restitution = 0.8;
+	//fixture definition
+	b2FixtureDef myFixtureDef;
+	myFixtureDef.shape = &polygonShape;
+	myFixtureDef.density = 0;
+	myFixtureDef.restitution = 0.8;
 	myFixtureDef.friction=1;
-    //create identical bodies in different positions
-    for (int i = 0; i < 3; i++) {
-      myBodyDef.position.Set(15, 15+5*i);
-	  CCSize size = CCDirector::sharedDirector()->getWinSize();
-	  CCSize size2 = CCDirector::sharedDirector()->getWinSizeInPixels();
-      bodies[i] = m_lpGameWorld->CreateBody(&myBodyDef);
+	//create identical bodies in different positions
+	for (int i = 0; i < 3; i++) {
+		myBodyDef.position.Set(15, 15+5*i);
+		CCSize size = CCDirector::sharedDirector()->getWinSize();
+		CCSize size2 = CCDirector::sharedDirector()->getWinSizeInPixels();
+		bodies[i] = m_lpGameWorld->CreateBody(&myBodyDef);
 
-	  if(i==1 || i ==2)
-	  {
-
-
-		myFixtureDef.shape=&circleShape;
-
-		if(i == 2)
+		if(i==1 || i ==2)
 		{
-			myFixtureDef.friction = 1;
+
+
+			myFixtureDef.shape=&circleShape;
+
+			if(i == 2)
+			{
+				myFixtureDef.friction = 1;
+			}
 		}
-	  }
 
 
-      b2Fixture* fixture =  bodies[i]->CreateFixture(&myFixtureDef);
+		b2Fixture* fixture =  bodies[i]->CreateFixture(&myFixtureDef);
 
-	  b2Filter filter;
-	  							filter.categoryBits = BDObject::GROUP_MASK_BABE;
-							filter.maskBits =  BDObject::GROUP_MASK_BABE;
-							fixture->SetFilterData(filter);
+		b2Filter filter;
+		filter.categoryBits = BDObject::GROUP_MASK_BABE;
+		filter.maskBits =  BDObject::GROUP_MASK_BABE;
+		fixture->SetFilterData(filter);
 
-    }
-    
-    //a static floor to drop things on
-    myBodyDef.type = b2_staticBody;
-    myBodyDef.position.Set(0, 0);
+	}
+
+	//a static floor to drop things on
+	myBodyDef.type = b2_staticBody;
+	myBodyDef.position.Set(0, 0);
 
 
 	b2EdgeShape edgeShape;
@@ -475,47 +475,103 @@ void BDGameLayer::CreateBodiesTest()
 	myFixtureDef.friction = 0;
 
 	b2Filter filter;
-	  							filter.categoryBits = BDObject::GROUP_MASK_BABE;
-							filter.maskBits =  BDObject::GROUP_MASK_BABE;
-    m_lpGameWorld->CreateBody(&myBodyDef)->CreateFixture(&myFixtureDef)->SetFilterData(filter);
+	filter.categoryBits = BDObject::GROUP_MASK_BABE;
+	filter.maskBits =  BDObject::GROUP_MASK_BABE;
+	m_lpGameWorld->CreateBody(&myBodyDef)->CreateFixture(&myFixtureDef)->SetFilterData(filter);
 }
 
 void BDGameLayer::CreateBodiesTest2() 
 {
 
-	    //set up a dynamic body
-    b2BodyDef myBodyDef;
-    myBodyDef.type = b2_dynamicBody;
-    myBodyDef.position.Set(20, 20); //middle
-    b2Body* dynamicBody = m_lpGameWorld->CreateBody(&myBodyDef);
-    
-    //prepare a shape definition
-    b2PolygonShape polygonShape;
-    b2FixtureDef myFixtureDef;
-    myFixtureDef.shape = &polygonShape;
-    myFixtureDef.density = 1;
+	//set up a dynamic body
+	b2BodyDef myBodyDef;
+	myBodyDef.type = b2_dynamicBody;
+	myBodyDef.position.Set(20, 20); //middle
+	b2Body* dynamicBody = m_lpGameWorld->CreateBody(&myBodyDef);
+
+	//prepare a shape definition
+	b2PolygonShape polygonShape;
+	b2FixtureDef myFixtureDef;
+	myFixtureDef.shape = &polygonShape;
+	myFixtureDef.density = 1;
 	myFixtureDef.restitution = 0.8;
 	myFixtureDef.friction = 0;
 
-    //add four square shaped fixtures around the body center
-    for ( int i = 0; i < 4; i++) {
-      b2Vec2 pos( sinf(i*90*DEGTORAD), cosf(i*90*DEGTORAD) ); //radial placement
-      polygonShape.SetAsBox(1, 1, pos, 0 ); //a 2x2 rectangle
-      dynamicBody->CreateFixture(&myFixtureDef); //add a fixture to the body
-    }
-    
-    //make a static floor to drop things on
-    myBodyDef.type = b2_staticBody;
-    myBodyDef.position.Set(0, 0); //middle, bottom
-    b2Body* staticBody = m_lpGameWorld->CreateBody(&myBodyDef);  
+	//add four square shaped fixtures around the body center
+	for ( int i = 0; i < 4; i++) {
+		b2Vec2 pos( sinf(i*90*DEGTORAD), cosf(i*90*DEGTORAD) ); //radial placement
+		polygonShape.SetAsBox(1, 1, pos, 0 ); //a 2x2 rectangle
+		dynamicBody->CreateFixture(&myFixtureDef); //add a fixture to the body
+	}
+
+	//make a static floor to drop things on
+	myBodyDef.type = b2_staticBody;
+	myBodyDef.position.Set(0, 0); //middle, bottom
+	b2Body* staticBody = m_lpGameWorld->CreateBody(&myBodyDef);  
 	b2EdgeShape edgeShape;
 	edgeShape.Set( b2Vec2(0,0), b2Vec2(30,5) );  
 	myFixtureDef.shape = &edgeShape; //slightly sloped  
 	myFixtureDef.restitution = 0.5;
 	myFixtureDef.friction = 0.5;
-    staticBody->CreateFixture(&myFixtureDef); //add a fixture to the body
+	staticBody->CreateFixture(&myFixtureDef); //add a fixture to the body
 }
 
+void BDGameLayer::CreateBodiesTest3() 
+{
+	//a static body
+	b2BodyDef myBodyDef;
+	myBodyDef.type = b2_staticBody;
+	myBodyDef.position.Set(0, 0);
+	b2Body* staticBody = m_lpGameWorld->CreateBody(&myBodyDef);
+
+	//shape definition
+	b2PolygonShape polygonShape;
+
+	//fixture definition
+	b2FixtureDef myFixtureDef;
+	myFixtureDef.shape = &polygonShape;
+
+
+	/*b2Vec2 bl(-20, 0);
+	b2Vec2 br( 20, 0);
+	b2Vec2 tl(-20,40);
+	b2Vec2 tr( 20,40);
+	*/
+
+	//add four walls to the static body
+	b2Vec2 bl(1, 1);
+	b2Vec2 br( 29, 1);
+	b2Vec2 tl(1,19);
+	b2Vec2 tr( 29,19);
+	b2EdgeShape edgeShape;
+	myFixtureDef.shape = &edgeShape;
+	edgeShape.Set( bl, br);//ground  
+	staticBody->CreateFixture(&myFixtureDef);
+	edgeShape.Set( tl, tr);//ceiling
+	staticBody->CreateFixture(&myFixtureDef);
+	edgeShape.Set( bl, tl);//left wall
+	staticBody->CreateFixture(&myFixtureDef);
+	edgeShape.Set( br, tr);;//right wall
+	staticBody->CreateFixture(&myFixtureDef);
+
+	myFixtureDef.shape = &polygonShape;
+	myBodyDef.type = b2_dynamicBody;
+	myBodyDef.position.Set(12,15);
+	polygonShape.SetAsBox(1,1);
+	myFixtureDef.density = 1;
+	for (int i = 0; i < 5; i++)
+		m_lpGameWorld->CreateBody(&myBodyDef)->CreateFixture(&myFixtureDef);
+
+	//circles
+	b2CircleShape circleShape;
+	circleShape.m_radius = 1;
+	myFixtureDef.shape = &circleShape;
+	for (int i = 0; i < 5; i++)
+		m_lpGameWorld->CreateBody(&myBodyDef)->CreateFixture(&myFixtureDef);
+
+	//turn gravity off
+	m_lpGameWorld->SetGravity( b2Vec2(0,0) );
+}
 
 void BDGameLayer::draw() 
 {
@@ -536,7 +592,7 @@ void BDGameLayer::update(float delta)
 		CCNode* pNode = (CCNode*)child;                 
 		if(pNode)                                                 
 		{                                                         
-			 pNode->update(delta);                                        
+			pNode->update(delta);                                        
 		}                                                         
 	}   
 
@@ -550,7 +606,7 @@ void BDGameLayer::update(float delta)
 
 		CCBone *ba = (CCBone *)contact.fixtureA->GetUserData();
 		CCBone *bb = (CCBone *)contact.fixtureB->GetUserData();
-		 
+
 		extension::CCArmature* aa = NULL;
 		extension::CCArmature* ab = NULL;
 		BDArmature* ba_a = NULL;
@@ -570,9 +626,9 @@ void BDGameLayer::update(float delta)
 		owner_b = ba_b->GetOwner();
 
 		HandleCollision(owner_a,owner_b);
-	
-	/*	if( bb != NULL)
-			bb->getArmature()->setVisible(false);*/
+
+		/*	if( bb != NULL)
+		bb->getArmature()->setVisible(false);*/
 	}
 }
 
@@ -603,7 +659,7 @@ JSBool js_bdgamelayer_create(JSContext *cx, uint32_t argc, jsval *vp)
 JSBool js_bdgamelayer_sayHello(JSContext *cx, uint32_t argc, jsval *vp)
 {
 	int kkk = 0;
-	
+
 
 	JS_ReportError(cx, "wrong number of arguments");
 	return JS_FALSE;
@@ -649,7 +705,7 @@ JSBool js_bdgamelayer_addGameObject(JSContext *cx, uint32_t argc, jsval *vp)
 	js_proxy_t *proxy = jsb_get_js_proxy(obj);
 	cobj = (BDGameLayer*)(proxy ? proxy->ptr : NULL);
 	JSB_PRECONDITION2( cobj, cx, JS_FALSE, "Invalid Native Object");   
-	
+
 
 	/*do {
 	if (argc == 1) {
@@ -675,7 +731,7 @@ JSBool js_bdgamelayer_addGameObject(JSContext *cx, uint32_t argc, jsval *vp)
 		JSObject* defObj = JSVAL_TO_OBJECT(argv[0]); 
 		BDObject* newObj = NULL;
 		JSObject* jsObj = NULL;
-		
+
 		def.ApplyFromDefObj(cx,defObj); 
 		newObj = cobj->AddGameObject(cx,def);
 
@@ -697,7 +753,7 @@ JSBool js_bdgamelayer_addGameObject(JSContext *cx, uint32_t argc, jsval *vp)
 
 		return JS_TRUE;    
 	}
-	
+
 	JS_ReportError(cx, "wrong number of arguments");  
 	return JS_FALSE;
 }

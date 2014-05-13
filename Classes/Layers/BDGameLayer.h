@@ -94,6 +94,8 @@ public:
 	BDCharacter* GetMainCharacter();
 	void CreateBodiesTest() ;
 	void CreateBodiesTest2() ;
+	void CreateBodiesTest3() ;
+	
 
 	void HandleCollision(BDObject* objA,BDObject* objB);
 	void onFrameEvent(cocos2d::extension::CCBone *bone, const char *evt, int originFrameIndex, int currentFrameIndex);
